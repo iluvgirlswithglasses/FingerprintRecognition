@@ -11,7 +11,6 @@ namespace FingerprintRecognition.Filter
             var res = new Image<Gray, double>(src.Size);
             double m = src.GetAverage().Intensity, 
                    v = Tool.MatTool<byte>.Std(ref src);
-            v *= v;
 
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
@@ -22,7 +21,7 @@ namespace FingerprintRecognition.Filter
 
         static private double NormalizePixel(double m0, double v0, double px, double m, double v)
         {
-            double coeff = Sqrt( v0 * ((px - m) * (px - m)) / v );
+            double coeff = Sqrt( v0 * ((px - m) * (px - m))) / v;
             if (px > m)
                 return m0 + coeff;
             return m0 - coeff;
