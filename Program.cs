@@ -15,7 +15,8 @@ const string CWD    = "D:\\r\\siglaz\\FingerprintRecognition\\";
 const string SOURCE = CWD + "sample-images\\0.jpg";
 const string TARGET = CWD + "sample-images\\2.jpg";
 
-const string O_PATH = CWD + "sample-images-o\\blured-normalized.jpg";
+const string O1PATH = CWD + "sample-images-o\\blured-normalized.jpg";
+const string O2PATH = CWD + "sample-images-o\\blured-normalized--binary.jpg";
 
 /** envokes */
 FImage source = new FImage(new Image<Gray, byte>(SOURCE));
@@ -25,4 +26,4 @@ FImage target = new FImage(new Image<Gray, byte>(TARGET));
 target.Src = Smooth.LibBlur(ref target.Src);
 Image<Gray, double> normDouble = Normalization.Normalize(ref target.Src, 100.0, 100.0);
 
-CvInvoke.Imwrite(O_PATH, ToImage.FromDoubleMatrix(ref normDouble));
+CvInvoke.Imwrite(O1PATH, ToImage.FromDoubleMatrix(ref normDouble));

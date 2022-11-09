@@ -15,12 +15,12 @@ namespace FingerprintRecognition.Filter
 
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
-                    res[y, x] = new Gray(normalizePixel(m0, v0, src[y, x].Intensity, m, v));
+                    res[y, x] = new Gray(NormalizePixel(m0, v0, src[y, x].Intensity, m, v));
 
             return res;
         }
 
-        static private double normalizePixel(double m0, double v0, double px, double m, double v)
+        static private double NormalizePixel(double m0, double v0, double px, double m, double v)
         {
             double coeff = Sqrt( v0 * ((px - m) * (px - m)) / v );
             if (px > m)

@@ -25,11 +25,20 @@ namespace FingerprintRecognition.Tool
 
         static public double Max(ref Image<Gray, TDepth> src)
         {
-            double mx = -1e18;
+            double mx = Double.MinValue;
             for (int y = 0; y < src.Height; y++)
                 for (int x = 0; x < src.Width; x++)
                     mx = Math.Max(mx, src[y, x].Intensity);
             return mx;
+        }
+
+        static public double Min(ref Image<Gray, TDepth> src)
+        {
+            double mn = Double.MaxValue;
+            for (int y = 0; y < src.Height; y++)
+                for (int x = 0; x < src.Width; x++)
+                    mn = Math.Min(mn, src[y, x].Intensity);
+            return mn;
         }
 
         /** @ calculators */
