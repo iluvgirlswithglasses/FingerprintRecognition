@@ -16,7 +16,7 @@ const string SOURCE = CWD + "sample-images\\0.jpg";
 const string TARGET = CWD + "sample-images\\2.jpg";
 
 const string O1PATH = CWD + "sample-images-o\\blured-normalized.jpg";
-const string O2PATH = CWD + "sample-images-o\\blured-normalized--binary.jpg";
+const string O2PATH = CWD + "sample-images-o\\blured-normalized-segmented.jpg";
 
 /** envokes */
 FImage source = new FImage(new Image<Gray, byte>(SOURCE));
@@ -25,5 +25,7 @@ FImage target = new FImage(new Image<Gray, byte>(TARGET));
 /** debug */
 target.Src = Smooth.LibBlur(ref target.Src);
 Image<Gray, double> normDouble = Normalization.Normalize(ref target.Src, 100.0, 100.0);
+Image<Gray, double> segmented = Segmentation.Create(ref normDouble, 16);
 
 CvInvoke.Imwrite(O1PATH, ToImage.FromDoubleMatrix(ref normDouble));
+CvInvoke.Imwrite(O2PATH, ToImage.FromDoubleMatrix(ref segmented));

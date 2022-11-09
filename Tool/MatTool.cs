@@ -6,7 +6,6 @@ namespace FingerprintRecognition.Tool
 {
     internal class MatTool<TDepth> where TDepth : new()
     {
-        /** @ tools for byte images */
         static public double Std(ref Image<Gray, TDepth> src)
         {
             /*
@@ -39,6 +38,25 @@ namespace FingerprintRecognition.Tool
                 for (int x = 0; x < src.Width; x++)
                     mn = Math.Min(mn, src[y, x].Intensity);
             return mn;
+        }
+
+        /** @ extensions */
+        static public double Std(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
+        {
+            /*
+            The standard deviation is the square root of the average of the 
+            squared deviations from the mean, i.e., std = sqrt(mean(x)), 
+            where x = abs(a - a.mean())**2.
+            */
+            double avg = src.GetAverage().Intensity;
+            double res = 0;
+            for (int y = t; y < d; y++)
+                for (int x = l; x < r; x++)
+                    res += Sqr(src[y, x].Intensity - avg);
+
+            return Sqrt(
+                res / ((d - t) * (r - l))
+            );
         }
 
         /** @ calculators */

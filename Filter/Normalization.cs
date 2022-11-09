@@ -26,5 +26,19 @@ namespace FingerprintRecognition.Filter
                 return m0 + coeff;
             return m0 - coeff;
         }
+
+        static public Image<Gray, double> AllignAvg(ref Image<Gray, double> norm)
+        {
+            var res = new Image<Gray, double>(norm.Size);
+
+            double avg = norm.GetAverage().Intensity;
+            double std = Tool.MatTool<double>.Std(ref norm);
+
+            for (int y = 0; y < res.Height; y++)
+                for (int x = 0; x < res.Width; x++)
+                    res[y, x] = new Gray((norm[y, x].Intensity - avg) / std);
+
+            return res;
+        }
     }
 }
