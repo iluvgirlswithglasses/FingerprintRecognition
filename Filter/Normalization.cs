@@ -10,7 +10,8 @@ namespace FingerprintRecognition.Filter
         {
             var res = new Image<Gray, double>(src.Size);
             double m = src.GetAverage().Intensity, 
-                   v = Tool.MatTool.Std(ref src);
+                   v = Tool.MatTool<byte>.Std(ref src);
+            v *= v;
 
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
