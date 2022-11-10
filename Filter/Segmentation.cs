@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using FingerprintRecognition.BinaryEffect;
 using static System.Math;
 
 namespace FingerprintRecognition.Filter
@@ -16,31 +17,33 @@ namespace FingerprintRecognition.Filter
         {
             var res = new Image<Gray, double>(src.Size);
 
-            /** get useful segments */
-            var msk = new bool[res.Height, res.Height];
+            // msk[y, x] manages the block[ y*w : (y+1)*w ][ x*w : (x+1)*w ]
+            var msk = new bool[
+                (int) Ceiling(Convert.ToDouble(res.Height) / w), 
+                (int) Ceiling(Convert.ToDouble(res.Height) / w)
+            ];
             var threshold = 0.2 * Tool.MatTool<double>.Std(ref src);
 
-            for (int y = 0; y < src.Height; y+=w)
+            for (int y = 0; y < msk.GetLength(0); y++)
             {
-                for (int x = 0; x < src.Width; x+=w)
+                for (int x = 0; x < msk.GetLength(1); x++)
                 {
                     double std = Tool.MatTool<double>.Std(
-                        ref src, y, x, Min(y + w, src.Height), Min(x + w, src.Width)
+                        ref src, y*w, x*w, Min(y*w + w, src.Height), Min(x*w + w, src.Width)
                     );
-                    if (std < threshold)
-                        continue;
-
-                    // found a useful block
-                    for (int i = 0; i < Min(w, src.Height - y); i++)
-                        for (int j = 0; j < Min(w, src.Width - x); j++)
-                            msk[y + i, x + j] = true;
+                    msk[y, x] = std > threshold;
                 }
             }
+
+            // apply Morphological Opening & Closing to the mask
+            // https://docs.opencv.org/4.x/d9/d61/tutorial_py_morphological_ops.html
+            Morphology.Open(ref msk);
+            Morphology.Close(ref msk);
 
             /** apply mask */
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
-                    if (msk[y, x]) 
+                    if (msk[y / w, x / w]) 
                         res[y, x] = new Gray(src[y, x].Intensity);
 
             return res;

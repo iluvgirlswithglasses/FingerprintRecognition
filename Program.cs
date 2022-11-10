@@ -25,6 +25,6 @@ Image<Gray, double> norm = Normalization.Normalize(ref target.Src, 100.0, 100.0)
 Image<Gray, double> segmented = Segmentation.Create(ref norm, 16);
 
 /** debug */
-norm = Normalization.AllignAvg(ref norm);
 CvInvoke.Imwrite(CWD + "sample-images-o\\norm.jpg", ToImage.FromDoubleMatrix(ref norm));
+segmented = Normalization.AllignAvg(ref segmented);
 CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(ref segmented));
