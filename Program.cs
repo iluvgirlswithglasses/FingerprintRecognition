@@ -8,6 +8,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition;
 using FingerprintRecognition.Filter;
+using FingerprintRecognition.MathMatrix;
 using FingerprintRecognition.MatrixConverter;
 
 /** @ temporary constants */
@@ -25,9 +26,10 @@ FImage target = new(new Image<Gray, byte>(TARGET));
 Image<Gray, double> norm = Normalization.Normalize(ref target.Src, 100.0, 100.0);
 // focus on the fingerprint
 Image<Gray, double> segmented = Segmentation.Create(ref norm, 16);
-// seperates the ridges from the rest
+// seperates the ridges
 norm = Normalization.AllignAvg(ref norm);
+// get gradient image
+Image<Gray, double> angle = AngleMat.Create(ref norm);
 
 /** @ debug */
 CvInvoke.Imwrite(CWD + "sample-images-o\\norm.jpg", ToImage.FromDoubleMatrix(ref norm));
-CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(ref segmented));
