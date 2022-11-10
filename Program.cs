@@ -15,17 +15,16 @@ const string CWD    = "D:\\r\\siglaz\\FingerprintRecognition\\";
 const string SOURCE = CWD + "sample-images\\0.jpg";
 const string TARGET = CWD + "sample-images\\2.jpg";
 
-const string O1PATH = CWD + "sample-images-o\\blured-normalized.jpg";
-const string O2PATH = CWD + "sample-images-o\\blured-normalized-segmented.jpg";
+/** get files */
+FImage source = new(new Image<Gray, byte>(SOURCE));
+FImage target = new(new Image<Gray, byte>(TARGET));
 
-/** envokes */
-FImage source = new FImage(new Image<Gray, byte>(SOURCE));
-FImage target = new FImage(new Image<Gray, byte>(TARGET));
+/** procedure */
+target.Src = Smooth.LibBlur(ref target.Src);
+Image<Gray, double> norm = Normalization.Normalize(ref target.Src, 100.0, 100.0);
+Image<Gray, double> segmented = Segmentation.Create(ref norm, 16);
 
 /** debug */
-target.Src = Smooth.LibBlur(ref target.Src);
-Image<Gray, double> normDouble = Normalization.Normalize(ref target.Src, 100.0, 100.0);
-Image<Gray, double> segmented = Segmentation.Create(ref normDouble, 16);
-
-CvInvoke.Imwrite(O1PATH, ToImage.FromDoubleMatrix(ref normDouble));
-CvInvoke.Imwrite(O2PATH, ToImage.FromDoubleMatrix(ref segmented));
+norm = Normalization.AllignAvg(ref norm);
+CvInvoke.Imwrite(CWD + "sample-images-o\\norm.jpg", ToImage.FromDoubleMatrix(ref norm));
+CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(ref segmented));

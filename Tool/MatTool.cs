@@ -48,7 +48,7 @@ namespace FingerprintRecognition.Tool
             squared deviations from the mean, i.e., std = sqrt(mean(x)), 
             where x = abs(a - a.mean())**2.
             */
-            double avg = src.GetAverage().Intensity;
+            double avg = Sum(ref src, t, l, d, r) / ((d - t) * (r - l));
             double res = 0;
             for (int y = t; y < d; y++)
                 for (int x = l; x < r; x++)
@@ -57,6 +57,15 @@ namespace FingerprintRecognition.Tool
             return Sqrt(
                 res / ((d - t) * (r - l))
             );
+        }
+
+        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
+        {
+            double res = 0;
+            for (int y = t; y < d; y++)
+                for (int x = l; x < r; x++)
+                    res += src[y, x].Intensity;
+            return res;
         }
 
         /** @ calculators */
