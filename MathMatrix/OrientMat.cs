@@ -35,7 +35,7 @@ namespace FingerprintRecognition.MathMatrix
                     b += xAngle*xAngle - yAngle*yAngle;
                 }
 
-                if (a != 0.0 || b != 0.0) 
+                if (a != 0.0 && b != 0.0) 
                     res[y0 / w, x0 / w] = (PI + Atan2(a, b)) / 2;
             }
 
@@ -52,7 +52,7 @@ namespace FingerprintRecognition.MathMatrix
             {
                 for (int x = 0; x < w; x++)
                 {
-                    if (msk[y, x])
+                    if (msk[y, x] && orient[y, x] != 0)
                     {
                         double alpha = Tan(orient[y, x]);
                         int sX = x * s, sY = y * s;
