@@ -11,6 +11,9 @@ using FingerprintRecognition.Filter;
 using FingerprintRecognition.MathMatrix;
 using FingerprintRecognition.MatrixConverter;
 
+/** @ program parameters */
+const int BLOCK_SIZE = 8;
+
 /** @ temporary constants */
 const string CWD    = "D:\\r\\siglaz\\FingerprintRecognition\\";
 const string SOURCE = CWD + "sample-images\\0.jpg";
@@ -25,11 +28,14 @@ FImage target = new(new Image<Gray, byte>(TARGET));
 // target.Src = Smooth.LibBlur(ref target.Src);
 Image<Gray, double> norm = Normalization.Normalize(ref target.Src, 100.0, 100.0);
 // focus on the fingerprint
-Image<Gray, double> segmented = Segmentation.Create(ref norm, 16);
+bool[,] segmentMask = Segmentation.CreateMask(ref norm, BLOCK_SIZE);
+Image<Gray, double> segmented = Segmentation.ApplyMask(ref norm, ref segmentMask, BLOCK_SIZE);
 // seperates the ridges
 norm = Normalization.AllignAvg(ref norm);
 // get gradient image
-Image<Gray, double> angle = AngleMat.Create(ref norm);
+double[,] angle = AngleMat.Create(ref norm, BLOCK_SIZE);
 
 /** @ debug */
-CvInvoke.Imwrite(CWD + "sample-images-o\\norm.jpg", ToImage.FromDoubleMatrix(ref norm));
+CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(ref segmented));
+Image<Gray, byte> angleImg = AngleMat.Visualize(ref segmented, ref segmentMask, ref angle, BLOCK_SIZE);
+CvInvoke.Imwrite(CWD + "sample-images-o\\angle-img.jpg", angleImg);

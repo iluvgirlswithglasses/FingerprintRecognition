@@ -68,6 +68,15 @@ namespace FingerprintRecognition.Tool
             return res;
         }
 
+        static public double Sum(ref double[,] src, int t, int l, int d, int r)
+        {
+            double res = 0;
+            for (int y = t; y < d; y++)
+                for (int x = l; x < r; x++)
+                    res += src[y, x];
+            return res;
+        }
+
         /** @ calculators */
         static private double Sqr(double x)
         {
