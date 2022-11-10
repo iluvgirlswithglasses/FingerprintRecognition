@@ -6,7 +6,7 @@ using static System.Math;
 
 namespace FingerprintRecognition.MathMatrix
 {
-    internal class AngleMat
+    internal class OrientMat
     {
         static public double[,] Create(ref Image<Gray, double> norm, int w)
         {
@@ -42,11 +42,11 @@ namespace FingerprintRecognition.MathMatrix
             return res;
         }
 
-        static public Image<Gray, byte> Visualize(ref Image<Gray, double> segment, ref bool[,] msk, ref double[,] angle, int s)
+        static public Image<Gray, byte> Visualize(ref Image<Gray, double> segment, ref bool[,] msk, ref double[,] orient, int s)
         {
             Image<Gray, byte> res = new(segment.Size);
             
-            int h = angle.GetLength(0), w = angle.GetLength(1);
+            int h = orient.GetLength(0), w = orient.GetLength(1);
             
             for (int y = 0; y < h; y++)
             {
@@ -54,7 +54,7 @@ namespace FingerprintRecognition.MathMatrix
                 {
                     if (msk[y, x])
                     {
-                        double alpha = Tan(angle[y, x]);
+                        double alpha = Tan(orient[y, x]);
                         int sX = x * s, sY = y * s;
                         int eX = x * s + s, eY = y * s + (int) alpha * s;
 

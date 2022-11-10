@@ -33,9 +33,9 @@ Image<Gray, double> segmented = Segmentation.ApplyMask(ref norm, ref segmentMask
 // seperates the ridges
 norm = Normalization.AllignAvg(ref norm);
 // get gradient image
-double[,] angle = AngleMat.Create(ref norm, BLOCK_SIZE);
+double[,] orient = OrientMat.Create(ref norm, BLOCK_SIZE);
 
 /** @ debug */
 CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(ref segmented));
-Image<Gray, byte> angleImg = AngleMat.Visualize(ref segmented, ref segmentMask, ref angle, BLOCK_SIZE);
-CvInvoke.Imwrite(CWD + "sample-images-o\\angle-img.jpg", angleImg);
+Image<Gray, byte> orientImg = OrientMat.Visualize(ref segmented, ref segmentMask, ref orient, BLOCK_SIZE);
+CvInvoke.Imwrite(CWD + "sample-images-o\\orient-img.jpg", orientImg);
