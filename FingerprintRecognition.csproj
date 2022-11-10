@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="MathMatrix\" />
     <Folder Include="Transform\" />
     <Folder Include="Skeletonization\" />
   </ItemGroup>

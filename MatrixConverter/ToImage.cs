@@ -1,7 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 
-namespace FingerprintRecognition.MatConverter
+namespace FingerprintRecognition.MatrixConverter
 {
     internal class ToImage
     {
