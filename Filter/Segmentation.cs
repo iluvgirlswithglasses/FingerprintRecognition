@@ -20,13 +20,13 @@ namespace FingerprintRecognition.Filter
                 (int)Ceiling(Convert.ToDouble(src.Height) / w),
                 (int)Ceiling(Convert.ToDouble(src.Width) / w)
             ];
-            var threshold = 0.2 * Tool.MatTool<double>.Std(ref src);
+            var threshold = 0.2 * Tool.ImgTool<double>.Std(ref src);
 
             for (int y = 0; y < msk.GetLength(0); y++)
             {
                 for (int x = 0; x < msk.GetLength(1); x++)
                 {
-                    double std = Tool.MatTool<double>.Std(
+                    double std = Tool.ImgTool<double>.Std(
                         ref src, y * w, x * w, Min(y * w + w, src.Height), Min(x * w + w, src.Width)
                     );
                     msk[y, x] = std > threshold;

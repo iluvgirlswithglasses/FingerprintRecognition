@@ -17,7 +17,7 @@ namespace FingerprintRecognition.MatrixConverter
         static public Image<Gray, byte> FromDoubleMatrix(ref Image<Gray, double> src)
         {
             var res = new Image<Gray, byte>(src.Size);
-            double mx = Tool.MatTool<double>.Max(ref src);
+            double mx = Tool.ImgTool<double>.Max(ref src);
 
             if (mx == 0.0)
                 return res;

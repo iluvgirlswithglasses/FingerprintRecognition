@@ -9,7 +9,7 @@ namespace FingerprintRecognition.Filter
         static public Image<Gray, byte> Create(ref Image<Gray, TDepth> src)
         {
             var res = new Image<Gray, byte>(src.Size);
-            double threshold = Tool.MatTool<TDepth>.Min(ref src) * 1.2;
+            double threshold = Tool.ImgTool<TDepth>.Min(ref src) * 1.2;
             for (int y = 0; y < src.Height; y++)
                 for (int x = 0; x < src.Width; x++)
                     res[y, x] = new Gray(255.0 * Convert.ToInt32(src[y, x].Intensity > threshold));
