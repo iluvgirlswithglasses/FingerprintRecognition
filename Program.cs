@@ -36,6 +36,7 @@ norm = Normalization.AllignAvg(ref norm);
 double[,] orient = OrientMat.Create(ref norm, BLOCK_SIZE);
 
 /** @ debug */
+CvInvoke.Imwrite(CWD + "sample-images-o\\normalized.jpg", ToImage.FromDoubleMatrix(ref norm));
 CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(ref segmented));
 Image<Gray, byte> orientImg = OrientMat.Visualize(ref segmented, ref segmentMask, ref orient, BLOCK_SIZE);
 CvInvoke.Imwrite(CWD + "sample-images-o\\orient-img.jpg", orientImg);

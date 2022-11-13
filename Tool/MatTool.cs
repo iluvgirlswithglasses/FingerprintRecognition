@@ -6,6 +6,21 @@ namespace FingerprintRecognition.Tool
 {
     internal class MatTool<TDepth> where TDepth : new()
     {
+        /** @ testing */
+        static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, double> f)
+        {
+            Forward(ref src, (y, x, v) => { return true; }, f);
+        }
+
+        static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, bool> g, Func<int, int, double, double> f)
+        {
+            for (int y = 0; y < src.Height; y++)
+                for (int x = 0; x < src.Width; x++)
+                    if (g(y, x, src[y, x].Intensity)) 
+                        f(y, x, src[y, x].Intensity);
+        }
+
+        /**  */
         static public double Std(ref Image<Gray, TDepth> src)
         {
             /*
@@ -20,6 +35,11 @@ namespace FingerprintRecognition.Tool
                     res += Sqr(src[y, x].Intensity - avg);
 
             return Sqrt(res / (src.Height * src.Width));
+        }
+
+        static public double Sum(ref Image<Gray, TDepth> src, Func<double, double> f)
+        {
+            return Sum(ref src, 0, 0, src.Height, src.Width, f);
         }
 
         static public double Max(ref Image<Gray, TDepth> src)
@@ -59,13 +79,18 @@ namespace FingerprintRecognition.Tool
             );
         }
 
-        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
+        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r, Func<double, double> f)
         {
-            double res = 0;
+            double res = 0.0;
             for (int y = t; y < d; y++)
                 for (int x = l; x < r; x++)
-                    res += src[y, x].Intensity;
+                    res += f(src[y, x].Intensity);
             return res;
+        }
+
+        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
+        {
+            return Sum(ref src, t, l, d, r, (x) => { return x; });
         }
 
         static public double Sum(ref double[,] src, int t, int l, int d, int r)
@@ -78,7 +103,7 @@ namespace FingerprintRecognition.Tool
         }
 
         /** @ calculators */
-        static private double Sqr(double x)
+        static public double Sqr(double x)
         {
             return x * x;
         }
