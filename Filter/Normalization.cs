@@ -15,7 +15,7 @@ namespace FingerprintRecognition.Filter
 
             MatTool<byte>.Forward(ref src, (y, x, val) => {
                 res[y, x] = new Gray(NormalizePixel(m0, v0, val, m, v));
-                return 0;
+                return true;
             });
 
             return res;
@@ -38,7 +38,7 @@ namespace FingerprintRecognition.Filter
 
             MatTool<double>.Forward(ref norm, (y, x, v) => {
                 res[y, x] = new Gray((v - avg) / std);
-                return 0;
+                return true;
             });
 
             return res;

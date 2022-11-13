@@ -6,21 +6,36 @@ namespace FingerprintRecognition.Tool
 {
     internal class MatTool<TDepth> where TDepth : new()
     {
-        /** @ testing */
-        static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, double> f)
+        /** @ the core */
+        static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, bool> f)
         {
-            Forward(ref src, (y, x, v) => { return true; }, f);
+            Forward(ref src, 0, 0, src.Height, src.Width, (y, x, v) => { return true; }, f);
         }
 
-        static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, bool> g, Func<int, int, double, double> f)
+        static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, bool> g, Func<int, int, double, bool> f)
         {
-            for (int y = 0; y < src.Height; y++)
-                for (int x = 0; x < src.Width; x++)
-                    if (g(y, x, src[y, x].Intensity)) 
+            Forward(ref src, 0, 0, src.Height, src.Width, g, f);
+        }
+
+        static public void Forward(ref Image<Gray, TDepth> src, int t, int l, int d, int r, Func<int, int, double, bool> f)
+        {
+            Forward(ref src, t, l, d, r, (y, x, v) => { return true; }, f);
+        }
+
+        static public void Forward(
+            ref Image<Gray, TDepth> src,
+            int t, int l, int d, int r,
+            Func<int, int, double, bool> g, 
+            Func<int, int, double, bool> f
+        ) {
+            for (int y = t; y < d; y++)
+                for (int x = l; x < r; x++)
+                    // if g() then execute f()
+                    if (g(y, x, src[y, x].Intensity))
                         f(y, x, src[y, x].Intensity);
         }
 
-        /**  */
+        /** @ shortcuts */
         static public double Std(ref Image<Gray, TDepth> src)
         {
             /*
@@ -30,6 +45,7 @@ namespace FingerprintRecognition.Tool
             */
             double avg = src.GetAverage().Intensity;
             double res = 0;
+
             for (int y = 0; y < src.Height; y++)
                 for (int x = 0; x < src.Width; x++)
                     res += Sqr(src[y, x].Intensity - avg);
