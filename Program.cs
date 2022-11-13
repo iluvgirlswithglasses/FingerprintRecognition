@@ -26,17 +26,18 @@ FImage target = new(new Image<Gray, byte>(TARGET));
 /** @ procedure */
 // make the image smooth, both shape-wise and color-wise
 // target.Src = Smooth.LibBlur(ref target.Src);
-Image<Gray, double> norm = Normalization.Normalize(ref target.Src, 100.0, 100.0);
+Image<Gray, double> norm = Normalization.Normalize(target.Src, 100.0, 100.0);
 // focus on the fingerprint
-bool[,] segmentMask = Segmentation.CreateMask(ref norm, BLOCK_SIZE);
-Image<Gray, double> segmented = Segmentation.ApplyMask(ref norm, ref segmentMask, BLOCK_SIZE);
+bool[,] segmentMask = Segmentation.CreateMask(norm, BLOCK_SIZE);
+Image<Gray, double> segmented = Segmentation.ApplyMask(norm, segmentMask, BLOCK_SIZE);
 // seperates the ridges
-norm = Normalization.AllignAvg(ref norm);
+norm = Normalization.AllignAvg(norm);
 // get gradient image
-double[,] orient = OrientMat.Create(ref norm, BLOCK_SIZE);
+double[,] orient = OrientMat.Create(norm, BLOCK_SIZE);
+norm = Normalization.AllignWithMask(norm, segmentMask, BLOCK_SIZE);
 
 /** @ debug */
-CvInvoke.Imwrite(CWD + "sample-images-o\\normalized.jpg", ToImage.FromDoubleMatrix(ref norm));
-CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(ref segmented));
-Image<Gray, byte> orientImg = OrientMat.Visualize(ref segmented, ref segmentMask, ref orient, BLOCK_SIZE);
+CvInvoke.Imwrite(CWD + "sample-images-o\\normalized.jpg", norm);
+CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleMatrix(segmented));
+Image<Gray, byte> orientImg = OrientMat.Visualize(segmented, segmentMask, orient, BLOCK_SIZE);
 CvInvoke.Imwrite(CWD + "sample-images-o\\orient-img.jpg", orientImg);

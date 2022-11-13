@@ -13,7 +13,7 @@ namespace FingerprintRecognition.Filter
          * src: normalized image
          * w:   kernel size
          */
-        static public bool[,] CreateMask(ref Image<Gray, double> src, int w)
+        static public bool[,] CreateMask(Image<Gray, double> src, int w)
         {
             // msk[y, x] manages the block[ y*w : (y+1)*w ][ x*w : (x+1)*w ]
             var msk = new bool[
@@ -29,7 +29,7 @@ namespace FingerprintRecognition.Filter
                     double std = Tool.ImgTool<double>.Std(
                         ref src, y * w, x * w, Min(y * w + w, src.Height), Min(x * w + w, src.Width)
                     );
-                    msk[y, x] = std > threshold;
+                    msk[y, x] = std >= threshold;
                 }
             }
 
@@ -41,7 +41,7 @@ namespace FingerprintRecognition.Filter
             return msk;
         }
 
-        static public Image<Gray, double> ApplyMask(ref Image<Gray, double> src, ref bool[,] msk, int w)
+        static public Image<Gray, double> ApplyMask(Image<Gray, double> src, bool[,] msk, int w)
         {
             var res = new Image<Gray, double>(src.Size);
 

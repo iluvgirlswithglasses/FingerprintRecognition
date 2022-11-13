@@ -8,7 +8,7 @@ namespace FingerprintRecognition.MathMatrix
 {
     internal class OrientMat
     {
-        static public double[,] Create(ref Image<Gray, double> norm, int w)
+        static public double[,] Create(Image<Gray, double> norm, int w)
         {
             // res[y, x] controls the range norm[ y*w : (y+1)*w ][ x*w : (x+1)*w ]
             var res = new double[
@@ -42,7 +42,7 @@ namespace FingerprintRecognition.MathMatrix
             return res;
         }
 
-        static public Image<Gray, byte> Visualize(ref Image<Gray, double> segment, ref bool[,] msk, ref double[,] orient, int s)
+        static public Image<Gray, byte> Visualize(Image<Gray, double> segment, bool[,] msk, double[,] orient, int s)
         {
             Image<Gray, byte> res = new(segment.Size);
             

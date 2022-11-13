@@ -7,7 +7,7 @@ namespace FingerprintRecognition.Filter
 {
     internal class Normalization
     {
-        static public Image<Gray, double> Normalize(ref Image<Gray, byte> src, double m0, double v0)
+        static public Image<Gray, double> Normalize(Image<Gray, byte> src, double m0, double v0)
         {
             var res = new Image<Gray, double>(src.Size);
             double m = src.GetAverage().Intensity, 
@@ -29,7 +29,7 @@ namespace FingerprintRecognition.Filter
             return m0 - coeff;
         }
 
-        static public Image<Gray, double> AllignAvg(ref Image<Gray, double> norm)
+        static public Image<Gray, double> AllignAvg(Image<Gray, double> norm)
         {
             var res = new Image<Gray, double>(norm.Size);
 
@@ -44,29 +44,27 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
-        static public Image<Gray, double> AllignWithMask(ref Image<Gray, double> norm, bool[,] msk, int w)
+        static public Image<Gray, double> AllignWithMask(Image<Gray, double> norm, bool[,] msk, int w)
         {
             var res = new Image<Gray, double>(norm.Size);
 
             int n = 0;
             double sum = 0.0, avg = 0.0, std = 0.0;
 
-            for (int y = 0; y < msk.GetLength(0); y++)
-                for (int x = 0; x < msk.GetLength(1); x++)
-                    if (!msk[y, x])
-                    {
-                        sum += ImgTool<double>.Sum(ref norm, y * w, x * w, y * w + w, x * w + w);
-                        n += w * w;
-                    }
+            MatTool<bool>.Forward(ref msk, (y, x, v) => { return !v; }, (y, x, v) => {
+                sum += ImgTool<double>.Sum(ref norm, y * w, x * w, y * w + w, x * w + w);
+                n += w * w;
+                return true;
+            });
 
             avg = sum / n;
 
-            for (int y = 0; y < msk.GetLength(0); y++)
-                for (int x = 0; x < msk.GetLength(1); x++)
-                    if (!msk[y, x])
-                        std += ImgTool<double>.Sum(
-                            ref norm, y*w, x*w, y*w + w, x*w + w, (x) => { return (x - avg) * (x - avg); }
-                        );
+            MatTool<bool>.Forward(ref msk, (y, x, v) => { return !v; }, (y, x, v) => {
+                std += ImgTool<double>.Sum(
+                    ref norm, y*w, x*w, y*w + w, x*w + w, (x) => { return (x - avg) * (x - avg); }
+                );
+                return true;
+            });
 
             std = Sqrt(std / n);
 
