@@ -1,6 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.BinaryEffect;
+using FingerprintRecognition.Tool;
 using static System.Math;
 
 namespace FingerprintRecognition.Filter
@@ -20,18 +21,15 @@ namespace FingerprintRecognition.Filter
                 (int)Ceiling(Convert.ToDouble(src.Height) / w),
                 (int)Ceiling(Convert.ToDouble(src.Width) / w)
             ];
-            var threshold = 0.2 * Tool.ImgTool<double>.Std(ref src);
+            var threshold = 0.2 * ImgTool<double>.Std(ref src);
 
-            for (int y = 0; y < msk.GetLength(0); y++)
-            {
-                for (int x = 0; x < msk.GetLength(1); x++)
-                {
-                    double std = Tool.ImgTool<double>.Std(
-                        ref src, y * w, x * w, Min(y * w + w, src.Height), Min(x * w + w, src.Width)
-                    );
-                    msk[y, x] = std >= threshold;
-                }
-            }
+            MatTool<bool>.Forward(ref msk, (y, x, v) => {
+                double std = ImgTool<double>.Std(
+                    ref src, y * w, x * w, y * w + w, x * w + w
+                );
+                msk[y, x] = std >= threshold;
+                return true;
+            });
 
             // apply Morphological Opening & Closing to the mask
             // https://docs.opencv.org/4.x/d9/d61/tutorial_py_morphological_ops.html

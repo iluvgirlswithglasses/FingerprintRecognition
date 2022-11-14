@@ -12,7 +12,7 @@ using FingerprintRecognition.MathMatrix;
 using FingerprintRecognition.MatrixConverter;
 
 /** @ program parameters */
-const int BLOCK_SIZE = 8;
+const int BLOCK_SIZE = 16;
 
 /** @ temporary constants */
 const string CWD    = "D:\\r\\siglaz\\FingerprintRecognition\\";

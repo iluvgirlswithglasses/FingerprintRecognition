@@ -1,6 +1,5 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
-using static System.Math;
 
 namespace FingerprintRecognition.Tool
 {
@@ -14,12 +13,16 @@ namespace FingerprintRecognition.Tool
 
         static public void Forward(ref Image<Gray, TDepth> src, int t, int l, int d, int r, Func<int, int, double, bool> f) 
         {
+            t = Math.Max(0, t);
+            l = Math.Max(0, l);
+            d = Math.Min(src.Height, d);
+            r = Math.Min(src.Width, r);
             for (int y = t; y < d; y++)
                 for (int x = l; x < r; x++)
                     f(y, x, src[y, x].Intensity);
         }
 
-        /** @ shortcuts */
+        /** @ std shortcuts */
         static public double Std(ref Image<Gray, TDepth> src)
         {
             /*
@@ -34,14 +37,53 @@ namespace FingerprintRecognition.Tool
                 for (int x = 0; x < src.Width; x++)
                     res += Sqr(src[y, x].Intensity - avg);
 
-            return Sqrt(res / (src.Height * src.Width));
+            return Math.Sqrt(res / (src.Height * src.Width));
         }
 
+        static public double Std(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
+        {
+            /*
+            The standard deviation is the square root of the average of the 
+            squared deviations from the mean, i.e., std = sqrt(mean(x)), 
+            where x = abs(a - a.mean())**2.
+            */
+            double avg = Sum(ref src, t, l, d, r);
+            double res = 0;
+
+            avg /= (Math.Min(src.Height, d) - t) * (Math.Min(src.Width, r) - l);
+
+            Forward(ref src, t, l, d, r, (y, x, v) => {
+                res += Sqr(v - avg);
+                return true;
+            });
+
+            return Math.Sqrt(
+                res / ((d - t) * (r - l))
+            );
+        }
+
+        /** @ sum shortcuts */
         static public double Sum(ref Image<Gray, TDepth> src, Func<double, double> f)
         {
             return Sum(ref src, 0, 0, src.Height, src.Width, f);
         }
 
+        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
+        {
+            return Sum(ref src, t, l, d, r, (x) => { return x; });
+        }
+
+        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r, Func<double, double> f)
+        {
+            double res = 0.0;
+            Forward(ref src, t, l, d, r, (y, x, v) => {
+                res += f(v);
+                return true;
+            });
+            return res;
+        }
+
+        /** @ min-max shortcuts */
         static public double Max(ref Image<Gray, TDepth> src)
         {
             double mx = Double.MinValue;
@@ -58,39 +100,6 @@ namespace FingerprintRecognition.Tool
                 for (int x = 0; x < src.Width; x++)
                     mn = Math.Min(mn, src[y, x].Intensity);
             return mn;
-        }
-
-        /** @ extensions */
-        static public double Std(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
-        {
-            /*
-            The standard deviation is the square root of the average of the 
-            squared deviations from the mean, i.e., std = sqrt(mean(x)), 
-            where x = abs(a - a.mean())**2.
-            */
-            double avg = Sum(ref src, t, l, d, r) / ((d - t) * (r - l));
-            double res = 0;
-            for (int y = t; y < d; y++)
-                for (int x = l; x < r; x++)
-                    res += Sqr(src[y, x].Intensity - avg);
-
-            return Sqrt(
-                res / ((d - t) * (r - l))
-            );
-        }
-
-        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r, Func<double, double> f)
-        {
-            double res = 0.0;
-            for (int y = t; y < d; y++)
-                for (int x = l; x < r; x++)
-                    res += f(src[y, x].Intensity);
-            return res;
-        }
-
-        static public double Sum(ref Image<Gray, TDepth> src, int t, int l, int d, int r)
-        {
-            return Sum(ref src, t, l, d, r, (x) => { return x; });
         }
 
         /** @ calculators */
