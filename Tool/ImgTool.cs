@@ -50,7 +50,9 @@ namespace FingerprintRecognition.Tool
             double avg = Sum(ref src, t, l, d, r);
             double res = 0;
 
-            avg /= (Math.Min(src.Height, d) - t) * (Math.Min(src.Width, r) - l);
+            int n = (Math.Min(src.Height, d) - t) * (Math.Min(src.Width, r) - l);
+
+            avg /= n;
 
             Forward(ref src, t, l, d, r, (y, x, v) => {
                 res += Sqr(v - avg);
@@ -58,7 +60,7 @@ namespace FingerprintRecognition.Tool
             });
 
             return Math.Sqrt(
-                res / ((d - t) * (r - l))
+                res / n
             );
         }
 
