@@ -51,18 +51,22 @@ namespace FingerprintRecognition.Filter
             int n = 0;
             double sum = 0.0, avg = 0.0, std = 0.0;
 
-            MatTool<bool>.Forward(ref msk, (y, x, v) => { return !v; }, (y, x, v) => {
-                sum += ImgTool<double>.Sum(ref norm, y * w, x * w, y * w + w, x * w + w);
-                n += w * w;
+            MatTool<bool>.Forward(ref msk, (y, x, v) => {
+                if (!v)
+                {
+                    sum += ImgTool<double>.Sum(ref norm, y * w, x * w, y * w + w, x * w + w);
+                    n += w * w;
+                }
                 return true;
             });
 
             avg = sum / n;
 
-            MatTool<bool>.Forward(ref msk, (y, x, v) => { return !v; }, (y, x, v) => {
-                std += ImgTool<double>.Sum(
-                    ref norm, y*w, x*w, y*w + w, x*w + w, (x) => { return (x - avg) * (x - avg); }
-                );
+            MatTool<bool>.Forward(ref msk, (y, x, v) => {
+                if (!v)
+                    std += ImgTool<double>.Sum(
+                        ref norm, y*w, x*w, y*w + w, x*w + w, (x) => { return (x - avg) * (x - avg); }
+                    );
                 return true;
             });
 

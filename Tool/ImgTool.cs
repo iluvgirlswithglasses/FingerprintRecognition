@@ -9,30 +9,14 @@ namespace FingerprintRecognition.Tool
         /** @ the core */
         static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, bool> f)
         {
-            Forward(ref src, 0, 0, src.Height, src.Width, (y, x, v) => { return true; }, f);
+            Forward(ref src, 0, 0, src.Height, src.Width, f);
         }
 
-        static public void Forward(ref Image<Gray, TDepth> src, int t, int l, int d, int r, Func<int, int, double, bool> f)
+        static public void Forward(ref Image<Gray, TDepth> src, int t, int l, int d, int r, Func<int, int, double, bool> f) 
         {
-            Forward(ref src, t, l, d, r, (y, x, v) => { return true; }, f);
-        }
-
-        static public void Forward(ref Image<Gray, TDepth> src, Func<int, int, double, bool> g, Func<int, int, double, bool> f)
-        {
-            Forward(ref src, 0, 0, src.Height, src.Width, g, f);
-        }
-
-        static public void Forward(
-            ref Image<Gray, TDepth> src,
-            int t, int l, int d, int r,
-            Func<int, int, double, bool> g, 
-            Func<int, int, double, bool> f
-        ) {
             for (int y = t; y < d; y++)
                 for (int x = l; x < r; x++)
-                    // if g() then execute f()
-                    if (g(y, x, src[y, x].Intensity))
-                        f(y, x, src[y, x].Intensity);
+                    f(y, x, src[y, x].Intensity);
         }
 
         /** @ shortcuts */
