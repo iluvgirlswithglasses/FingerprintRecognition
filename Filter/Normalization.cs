@@ -49,10 +49,10 @@ namespace FingerprintRecognition.Filter {
 
             MatTool<bool>.Forward(ref msk, (y, x, v) => {
                 if (!v) {
-                    // make this more... human-friendly later
-                    sum += ImgTool<double>.Sum(ref norm, y*w, x*w, y*w + w, x*w + w, (val) => {
+                    ImgTool<double>.Forward(ref norm, y*w, x*w, y*w + w, x*w + w, (_y, _x, val) => {
+                        sum += val;
                         n++;
-                        return val;
+                        return true;
                     });
                 }
                 return true;
