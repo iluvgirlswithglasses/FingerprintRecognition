@@ -1,7 +1,7 @@
 ﻿
-namespace FingerprintRecognition.Algorithm
-{
-    internal class ConvexHull
-    {
+namespace FingerprintRecognition.Algorithm {
+
+    internal class ConvexHull {
+        
     }
 }

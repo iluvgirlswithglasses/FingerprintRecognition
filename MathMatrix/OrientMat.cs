@@ -1,15 +1,15 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Convolution;
+using FingerprintRecognition.Tool;
 using System.Drawing;
 using static System.Math;
 
-namespace FingerprintRecognition.MathMatrix
-{
-    internal class OrientMat
-    {
-        static public double[,] Create(Image<Gray, double> norm, int w)
-        {
+namespace FingerprintRecognition.MathMatrix {
+
+    internal class OrientMat {
+
+        static public double[,] Create(Image<Gray, double> norm, int w) {
             // res[y, x] controls the range norm[ y*w : (y+1)*w ][ x*w : (x+1)*w ]
             var res = new double[
                 (int)Ceiling(Convert.ToDouble(norm.Height) / w),
@@ -22,12 +22,11 @@ namespace FingerprintRecognition.MathMatrix
                 gx = KernelApplier.Apply(ref norm, SobelOperator.X_KERNEL);
 
             for (int y0 = 0; y0 < norm.Height; y0+=w)
-            for (int x0 = 0; x0 < norm.Width; x0+=w)
-            {
+            for (int x0 = 0; x0 < norm.Width; x0+=w) {
                 double a = 0.0, b = 0.0;
+
                 for (int y = y0; y < Min(y0+w, norm.Height); y++)
-                for (int x = x0; x < Min(x0+w, norm.Width); x++)
-                {
+                for (int x = x0; x < Min(x0+w, norm.Width); x++) {
                     // this simplification ensures a simple orientation image
                     double yAngle = Round(gy[y, x].Intensity),
                            xAngle = Round(gx[y, x].Intensity);
@@ -42,18 +41,14 @@ namespace FingerprintRecognition.MathMatrix
             return res;
         }
 
-        static public Image<Gray, byte> Visualize(Image<Gray, double> segment, bool[,] msk, double[,] orient, int s)
-        {
+        static public Image<Gray, byte> Visualize(Image<Gray, double> segment, bool[,] msk, double[,] orient, int s) {
             Image<Gray, byte> res = new(segment.Size);
             
             int h = orient.GetLength(0), w = orient.GetLength(1);
             
-            for (int y = 0; y < h; y++)
-            {
-                for (int x = 0; x < w; x++)
-                {
-                    if (msk[y, x] && orient[y, x] != 0)
-                    {
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    if (msk[y, x] && orient[y, x] != 0) {
                         double alpha = Tan(orient[y, x]);
                         int sX = x * s, sY = y * s;
                         int eX = x * s + s, eY = y * s + (int) alpha * s;

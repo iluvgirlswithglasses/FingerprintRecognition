@@ -1,13 +1,12 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 
-namespace FingerprintRecognition.Filter
-{
-    internal class Binary<TDepth> where TDepth : new()
-    {
+namespace FingerprintRecognition.Filter {
+
+    internal class Binary<TDepth> where TDepth : new() {
+
         // don't use this yet
-        static public Image<Gray, byte> Create(ref Image<Gray, TDepth> src)
-        {
+        static public Image<Gray, byte> Create(ref Image<Gray, TDepth> src) {
             var res = new Image<Gray, byte>(src.Size);
             double threshold = Tool.ImgTool<TDepth>.Min(ref src) * 1.2;
             for (int y = 0; y < src.Height; y++)

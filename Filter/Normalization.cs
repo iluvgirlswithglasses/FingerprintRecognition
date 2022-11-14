@@ -3,12 +3,11 @@ using Emgu.CV.Structure;
 using FingerprintRecognition.Tool;
 using static System.Math;
 
-namespace FingerprintRecognition.Filter
-{
-    internal class Normalization
-    {
-        static public Image<Gray, double> Normalize(Image<Gray, byte> src, double m0, double v0)
-        {
+namespace FingerprintRecognition.Filter {
+
+    internal class Normalization {
+
+        static public Image<Gray, double> Normalize(Image<Gray, byte> src, double m0, double v0) {
             var res = new Image<Gray, double>(src.Size);
             double m = src.GetAverage().Intensity, 
                    v = ImgTool<byte>.Std(ref src);
@@ -21,16 +20,14 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
-        static private double NormalizePixel(double m0, double v0, double px, double m, double v)
-        {
+        static private double NormalizePixel(double m0, double v0, double px, double m, double v) {
             double coeff = Sqrt( v0 * ((px - m) * (px - m))) / v;
             if (px > m)
                 return m0 + coeff;
             return m0 - coeff;
         }
 
-        static public Image<Gray, double> AllignAvg(Image<Gray, double> norm)
-        {
+        static public Image<Gray, double> AllignAvg(Image<Gray, double> norm) {
             var res = new Image<Gray, double>(norm.Size);
 
             double avg = norm.GetAverage().Intensity;
@@ -44,16 +41,15 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
-        static public Image<Gray, double> ExcludeBackground(Image<Gray, double> norm, bool[,] msk, int w)
-        {
+        static public Image<Gray, double> ExcludeBackground(Image<Gray, double> norm, bool[,] msk, int w) {
             var res = new Image<Gray, double>(norm.Size);
 
             int n = 0;
             double sum = 0.0, avg = 0.0, std = 0.0;
 
             MatTool<bool>.Forward(ref msk, (y, x, v) => {
-                if (!v)
-                {
+                if (!v) {
+                    // make this more... human-friendly later
                     sum += ImgTool<double>.Sum(ref norm, y*w, x*w, y*w + w, x*w + w, (val) => {
                         n++;
                         return val;

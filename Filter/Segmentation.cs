@@ -4,18 +4,17 @@ using FingerprintRecognition.BinaryEffect;
 using FingerprintRecognition.Tool;
 using static System.Math;
 
-namespace FingerprintRecognition.Filter
-{
-    internal class Segmentation
-    {
+namespace FingerprintRecognition.Filter {
+
+    internal class Segmentation {
+
         /** 
          * extracts the fingerprint part
          * 
          * src: normalized image
          * w:   kernel size
          */
-        static public bool[,] CreateMask(Image<Gray, double> src, int w)
-        {
+        static public bool[,] CreateMask(Image<Gray, double> src, int w) {
             // msk[y, x] manages the block[ y*w : (y+1)*w ][ x*w : (x+1)*w ]
             var msk = new bool[
                 (int)Ceiling(Convert.ToDouble(src.Height) / w),
@@ -39,8 +38,7 @@ namespace FingerprintRecognition.Filter
             return msk;
         }
 
-        static public Image<Gray, double> ApplyMask(Image<Gray, double> src, bool[,] msk, int w)
-        {
+        static public Image<Gray, double> ApplyMask(Image<Gray, double> src, bool[,] msk, int w) {
             var res = new Image<Gray, double>(src.Size);
 
             /** apply mask */

@@ -1,12 +1,11 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 
-namespace FingerprintRecognition.MatrixConverter
-{
-    internal class ToImage
-    {
-        static public Image<Gray, byte> FromBinaryArray(bool[,] bin)
-        {
+namespace FingerprintRecognition.MatrixConverter {
+
+    internal class ToImage {
+
+        static public Image<Gray, byte> FromBinaryArray(bool[,] bin) {
             var res = new Image<Gray, byte>(bin.GetLength(0), bin.Length);
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
@@ -14,8 +13,7 @@ namespace FingerprintRecognition.MatrixConverter
             return res;
         }
 
-        static public Image<Gray, byte> FromDoubleMatrix(Image<Gray, double> src)
-        {
+        static public Image<Gray, byte> FromDoubleMatrix(Image<Gray, double> src) {
             var res = new Image<Gray, byte>(src.Size);
             double mx = Tool.ImgTool<double>.Max(ref src);
 

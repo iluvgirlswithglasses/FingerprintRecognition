@@ -1,14 +1,11 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 
-namespace FingerprintRecognition
-{
-    internal class FImage
-    {
+namespace FingerprintRecognition {
+    internal class FImage {
         public Image<Gray, byte> Src;
 
-        public FImage(Image<Gray, byte> img)
-        {
+        public FImage(Image<Gray, byte> img) {
             Src = img;
         }
     }

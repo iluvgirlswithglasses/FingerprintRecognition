@@ -1,7 +1,7 @@
 ﻿
-namespace FingerprintRecognition.Algorithm
-{
-    internal class BinaryExclusive
-    {
+namespace FingerprintRecognition.Algorithm {
+
+    internal class BinaryExclusive {
+        
     }
 }
