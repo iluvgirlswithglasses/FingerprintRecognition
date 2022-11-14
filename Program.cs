@@ -34,7 +34,7 @@ Image<Gray, double> segmented = Segmentation.ApplyMask(norm, segmentMask, BLOCK_
 norm = Normalization.AllignAvg(norm);
 // get gradient image
 double[,] orient = OrientMat.Create(norm, BLOCK_SIZE);
-norm = Normalization.AllignWithMask(norm, segmentMask, BLOCK_SIZE);
+norm = Normalization.ExcludeBackground(norm, segmentMask, BLOCK_SIZE);
 
 /** @ debug */
 CvInvoke.Imwrite(CWD + "sample-images-o\\normalized.jpg", norm);

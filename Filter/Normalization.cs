@@ -44,7 +44,7 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
-        static public Image<Gray, double> AllignWithMask(Image<Gray, double> norm, bool[,] msk, int w)
+        static public Image<Gray, double> ExcludeBackground(Image<Gray, double> norm, bool[,] msk, int w)
         {
             var res = new Image<Gray, double>(norm.Size);
 
