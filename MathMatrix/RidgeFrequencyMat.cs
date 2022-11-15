@@ -74,7 +74,7 @@ namespace FingerprintRecognition.MathMatrix {
                 ridgeNoise[x] = Abs(dilation[x] - ridgeSum[x]);
 
             // get peaks
-            List<double> peaks = new List<double>();
+            List<int> peaks = new List<int>();
             for (int x = 0; x < width; x++)
                 if (ridgeNoise[x] < 2 && ridgeSum[x] > avg)
                     peaks.Add(x);
@@ -84,7 +84,7 @@ namespace FingerprintRecognition.MathMatrix {
             // peaks are detected, or the wavelength is outside the allowed bounds, the frequency image is set to 0
             if (peaks.Count < 2)
                 return 0.0;
-            double waveLength = (double)(peaks.Last() - peaks.First()) / (peaks.Count);
+            double waveLength = (double)(peaks.Last() - peaks.First()) / (peaks.Count - 1);
             if (waveLength >= minWaveLength && waveLength <= maxWaveLength)
                 return 1 / waveLength;
             return 0.0;

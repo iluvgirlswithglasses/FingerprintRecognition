@@ -27,8 +27,8 @@ namespace FingerprintRecognition.MathMatrix {
                 for (int y = y0; y < Min(y0+w, norm.Height); y++)
                 for (int x = x0; x < Min(x0+w, norm.Width); x++) {
                     // this simplification ensures a simple orientation image
-                    double yAngle = Round(gy[y, x].Intensity),
-                           xAngle = Round(gx[y, x].Intensity);
+                    double yAngle = gy[y, x].Intensity,
+                           xAngle = gx[y, x].Intensity;
                     a += 2.0 * yAngle * xAngle;
                     b += xAngle*xAngle - yAngle*yAngle;
                 }
