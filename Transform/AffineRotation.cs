@@ -24,7 +24,7 @@ namespace FingerprintRecognition.Transform {
     internal class AffineRotation<TDepth> where TDepth : new() {
 
         // keep size
-        static public TDepth[,] Create(TDepth[,] src, double rad) {
+        static public TDepth[,] KeepSizeCreate(TDepth[,] src, double rad) {
             rad = -rad;
 
             int h = src.GetLength(0), w = src.GetLength(1);
@@ -41,6 +41,36 @@ namespace FingerprintRecognition.Transform {
 
                     if (0 <= dy && dy < h && 0 <= dx && dx < w)
                         res[y, x] = src[dy, dx];
+                }
+            }
+            //
+            return res;
+        }
+
+        static public TDepth[,] Create(TDepth[,] src, double rad, TDepth background) {
+            rad = -rad;
+
+            int h = src.GetLength(0), w = src.GetLength(1);
+
+            TDepth[,] res = new TDepth[
+                (int)Ceiling(w * Abs(Cos(rad)) + h * Abs(Sin(rad))),
+                (int)Ceiling(w * Abs(Sin(rad)) + h * Abs(Cos(rad)))
+            ];
+
+            int srcy = h >> 1, srcx = w >> 1;
+            int resy = res.GetLength(0) >> 1, resx = res.GetLength(1) >> 1;
+            //
+            for (int y = 0; y < res.GetLength(0); y++) {
+                for (int x = 0; x < res.GetLength(1); x++) {
+                    // given P', calculate P
+                    int py = y - resy, px = x - resx;
+                    int dy = srcy + (int)Round(-px * Sin(rad) + py * Cos(rad)),
+                        dx = srcx + (int)Round(+px * Cos(rad) + py * Sin(rad));
+
+                    if (0 <= dy && dy < h && 0 <= dx && dx < w)
+                        res[y, x] = src[dy, dx];
+                    else
+                        res[y, x] = background;
                 }
             }
             //
