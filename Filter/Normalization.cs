@@ -76,5 +76,18 @@ namespace FingerprintRecognition.Filter {
             
             return res;
         }
+
+        /** @ useless prototype methods */
+        static public Image<Gray, double> BinaryNormalize(Image<Gray, byte> src, double threshold) {
+            var res = new Image<Gray, double>(src.Size);
+            double m = src.GetAverage().Intensity * threshold;
+
+            ImgTool<byte>.Forward(ref src, (y, x, val) => {
+                res[y, x] = new Gray(val > m ? 255 : 0);
+                return true;
+            });
+
+            return res;
+        }
     }
 }

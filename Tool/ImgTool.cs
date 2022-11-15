@@ -95,6 +95,15 @@ namespace FingerprintRecognition.Tool {
             return mn;
         }
 
+        /** @ cutters */
+        static public double[,] Crop(ref Image<Gray, TDepth> src, int t, int l, int d, int r) {
+            double[,] res = new double[d - t, r - l];
+            for (int i = 0; i < res.GetLength(0); i++)
+                for (int j = 0; j < res.GetLength(1); j++)
+                    res[i, j] = src[t + i, l + j].Intensity;
+            return res;
+        }
+
         /** @ calculators */
         static public double Sqr(double x) {
             return x * x;

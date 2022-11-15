@@ -18,6 +18,15 @@ namespace FingerprintRecognition.Tool {
                     f(y, x, src[y, x]);
         }
 
+        /** @ extensions */
+        static public T[,] Crop(ref T[,] src, int t, int l, int d, int r) {
+            T[,] res = new T[d - t, r - l];
+            for (int i = 0; i < res.GetLength(0); i++)
+                for (int j = 0; j < res.GetLength(1); j++)
+                    res[i, j] = src[t + i, l + j];
+            return res;
+        }
+
         /** @ i don't want to include System.Math */
         static private int Min(int a, int b) {
             return a < b ? a : b;

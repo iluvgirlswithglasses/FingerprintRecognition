@@ -1,7 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Convolution;
-using FingerprintRecognition.Tool;
 using System.Drawing;
 using static System.Math;
 
@@ -18,8 +17,8 @@ namespace FingerprintRecognition.MathMatrix {
 
             // x-gradiant & y-gradiant matrix
             Image<Gray, double> 
-                gy = KernelApplier.Apply(ref norm, SobelOperator.Y_KERNEL),
-                gx = KernelApplier.Apply(ref norm, SobelOperator.X_KERNEL);
+                gy = KernelApplier.Apply(norm, SobelOperator.Y_KERNEL),
+                gx = KernelApplier.Apply(norm, SobelOperator.X_KERNEL);
 
             for (int y0 = 0; y0 < norm.Height; y0+=w)
             for (int x0 = 0; x0 < norm.Width; x0+=w) {

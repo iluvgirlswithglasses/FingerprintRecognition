@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Transform\" />
     <Folder Include="Skeletonization\" />
   </ItemGroup>
 
