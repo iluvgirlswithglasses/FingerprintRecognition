@@ -1,10 +1,11 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
-using FingerprintRecognition.BinaryEffect;
 using FingerprintRecognition.Tool;
+using FingerprintRecognition.Transform;
 using static System.Math;
 
-namespace FingerprintRecognition.Filter {
+namespace FingerprintRecognition.Filter
+{
 
     internal class Segmentation {
 

@@ -53,44 +53,41 @@ namespace FingerprintRecognition.MathMatrix {
                 ref rotated, cropOffset, cropOffset, cropOffset + cropSize, Min(cropOffset + cropSize, w)
             );
 
-            // NOTE: Very unsafe
+            int width = rotated.GetLength(1);
+
+            // sum down the projection
+            double[] ridgeSum = new double[width];
+            for (int x = 0; x < rotated.GetLength(1); x++)
+                for (int y = 0; y < rotated.GetLength(0); y++)
+                    ridgeSum[x] += rotated[y, x];
+
+            // some statistics
             double avg = 0.0;
-            MatTool<double>.Forward(ref rotated, (y, x, val) => {
-                avg += val;
-                return true;
-            });
-            avg /= rotated.GetLength(0) * rotated.GetLength(1);
-            MatTool<double>.Forward(ref rotated, (y, x, val) => {
-                if (val <= avg)
-                    rotated[y, x] = 0;
-                else
-                    rotated[y, x] = 255;
-                return true;
-            });
+            for (int x = 0; x < width; x++)
+                avg += ridgeSum[x];
+            avg /= ridgeSum.Length;
 
-            int cnt = RidgeCount(rotated);
-            if (cnt < 2)
+            // get dilation and filter out noise
+            double[] dilation = Morphology.SimpleGrayDilation(ridgeSum, 3, 1);
+            double[] ridgeNoise = new double[dilation.Length];
+            for (int x = 0; x < width; x++)
+                ridgeNoise[x] = Abs(dilation[x] - ridgeSum[x]);
+
+            // get peaks
+            List<double> peaks = new List<double>();
+            for (int x = 0; x < width; x++)
+                if (ridgeNoise[x] < 2 && ridgeSum[x] > avg)
+                    peaks.Add(x);
+
+            // Determine the spatial frequency of the ridges by dividing the
+            // distance between the 1st and last peaks by the (No of peaks-1). If no
+            // peaks are detected, or the wavelength is outside the allowed bounds, the frequency image is set to 0
+            if (peaks.Count < 2)
                 return 0.0;
-            return (double) cnt / rotated.GetLength(1);
-
-            // debug
-            // const string SAVE_DIR = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\blocks\\";
-            // CvInvoke.Imwrite(SAVE_DIR + String.Format("{0}-{1}-cropped.png", t, l), ToImage.FromDoubleMatrix(cropped));
-            // CvInvoke.Imwrite(SAVE_DIR + String.Format("{0}-{1}-rotated.png", t, l), ToImage.FromDoubleMatrix(rotated));
-        }
-
-        static private int RidgeCount(double[,] block) {
-            int mx = 0;
-            for (int y = 0; y < block.GetLength(0); y++) {
-                int cr = 0;
-                if (block[y, 0] == 255)
-                    cr = 1;
-                for (int x = 1; x < block.GetLength(1); x++)
-                    if (block[y, x - 1] == 0 && block[y, x] == 255)
-                        cr++;
-                mx = Max(mx, cr);
-            }
-            return mx;
+            double waveLength = (double)(peaks.Last() - peaks.First()) / (peaks.Count);
+            if (waveLength >= minWaveLength && waveLength <= maxWaveLength)
+                return 1 / waveLength;
+            return 0.0;
         }
     }
 }
