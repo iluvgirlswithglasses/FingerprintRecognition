@@ -40,15 +40,11 @@ double[,] orient = OrientMat.Create(norm, BLOCK_SIZE);
 norm = Normalization.ExcludeBackground(norm, segmentMask, BLOCK_SIZE);
 // get frequency
 double[,] freq = RidgeFrequencyMat.Create(norm, segmentMask, orient, BLOCK_SIZE, 5);
+// gabor filter
+bool[,] gabor = Gabor.Create(norm, orient, freq);
 
 /** @ debug */
 CvInvoke.Imwrite(CWD + "sample-images-o\\normalized.jpg", norm);
 CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleImage(segmented));
 Image<Gray, byte> orientImg = OrientMat.Visualize(segmented, segmentMask, orient, BLOCK_SIZE);
 CvInvoke.Imwrite(CWD + "sample-images-o\\orient-img.jpg", orientImg);
-
-MatTool<double>.Forward(ref freq, (y, x, val) => {
-    if (val > 0)
-        Console.WriteLine(String.Format("{0}-{1} f = {2}", y * BLOCK_SIZE, x * BLOCK_SIZE, val));
-    return true;
-});
