@@ -21,8 +21,6 @@ namespace FingerprintRecognition.Filter {
             double[,] res = new double[h, w];
             double medianFreq = GetMedianFreq(freq);
 
-            Console.WriteLine("medianFreq: {0}", medianFreq);
-
             // Generate filters corresponding to these distinct frequencies and
             // orientations in 'ANGLE_INC' increments.
             double sigma = 1 / medianFreq * 0.65;
