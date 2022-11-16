@@ -13,12 +13,12 @@ namespace FingerprintRecognition.Filter {
          * `orient`:    the orient matrix, size [ h / blocksize, w / blocksize ]
          * `freq`:      the frequency matrix, size [ h / blocksize, w / blocksize ]
          * */
-        static public bool[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq, int imgBlockSize) {
+        static public double[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq, int imgBlockSize) {
 
             const int ANGLE_INC = 3;
             int h = norm.Height, w = norm.Width;
 
-            bool[,] res = new bool[h, w];
+            double[,] res = new double[h, w];
             double medianFreq = GetMedianFreq(freq);
 
             Console.WriteLine("medianFreq: {0}", medianFreq);
@@ -66,7 +66,7 @@ namespace FingerprintRecognition.Filter {
 
             // Convert orientation matrix values from radians
             // to an index value that corresponds to round(degrees/angleInc)
-            int mxOrientIndex = (int) Round(180f / ANGLE_INC);
+            int maxOrientIndex = (int) Round(180f / ANGLE_INC);
             int[,] orientIndex = new int[orient.GetLength(0), orient.GetLength(1)];
             MatTool<double>.Forward(ref orient, (y, x, val) => {
                 orientIndex[y, x] = (int) Round((val / PI * 180) / ANGLE_INC);
@@ -74,6 +74,38 @@ namespace FingerprintRecognition.Filter {
             });
 
             // 
+            MatTool<int>.Forward(ref orientIndex, (y, x, val) => {
+                if (val <= 0)
+                    orientIndex[y, x] = val + maxOrientIndex;
+                if (val > maxOrientIndex)
+                    orientIndex[y, x] = val - maxOrientIndex;
+                return true;
+            });
+
+            //
+            Iterator2D.Forward(blockSize, blockSize, h - blockSize, w - blockSize, (y, x) => {
+                if (freq[y/imgBlockSize, x/imgBlockSize] <= 0)
+                    return false;
+                int angleInd = orientIndex[y / imgBlockSize, x / imgBlockSize] - 1;
+                //
+                for (int r = 0; r < filterSize; r++) {
+                    for (int c = 0; c < filterSize; c++) {
+                        int localY = y - blockSize + r;
+                        int localX = x - blockSize + c;
+                        res[r, c] += norm[localY, localX].Intensity * gaborFilter[angleInd][r, c];
+                    }
+                }
+                return true;
+            });
+
+            // binary effect
+            MatTool<double>.Forward(ref res, (y, x, val) => {
+                if (val <= 0)
+                    res[y, x] = 0;
+                else
+                    res[y, x] = 255;
+                return true;
+            });
 
             return res;
         }
