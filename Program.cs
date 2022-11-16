@@ -49,3 +49,10 @@ CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleImage
 Image<Gray, byte> orientImg = OrientMat.Visualize(segmented, segmentMask, orient, BLOCK_SIZE);
 CvInvoke.Imwrite(CWD + "sample-images-o\\orient-img.jpg", orientImg);
 CvInvoke.Imwrite(CWD + "sample-images-o\\gabor-filter.jpg", ToImage.FromDoubleMatrix(gabor));
+
+for (int y = 0; y < norm.Height; y++) {
+    for (int x = 0; x < norm.Width; x++) {
+        Console.Write("{0} ", Math.Round(norm[y, x].Intensity * 100) / 100);
+    }
+    Console.WriteLine();
+}
