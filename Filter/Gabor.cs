@@ -1,16 +1,84 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Tool;
+using FingerprintRecognition.Transform;
 using static System.Math;
 
 namespace FingerprintRecognition.Filter {
+
     internal class Gabor {
-        static public bool[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq) {
+
+        /** 
+         * `norm`:      normalized imaged
+         * `orient`:    the orient matrix, size [ h / blocksize, w / blocksize ]
+         * `freq`:      the frequency matrix, size [ h / blocksize, w / blocksize ]
+         * */
+        static public bool[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq, int imgBlockSize) {
+
             const int ANGLE_INC = 3;
-
             int h = norm.Height, w = norm.Width;
-            bool[,] res = new bool[h, w];
 
+            bool[,] res = new bool[h, w];
+            double medianFreq = GetMedianFreq(freq);
+
+            Console.WriteLine("medianFreq: {0}", medianFreq);
+
+            // Generate filters corresponding to these distinct frequencies and
+            // orientations in 'ANGLE_INC' increments.
+            double sigma = 1 / medianFreq * 0.65;
+            int blockSize = (int)Round(3.0 * sigma);
+            int filterSize = blockSize << 1 | 1;
+
+            double[,] sigmaMaskX = new double[filterSize, filterSize];
+            double[,] sigmaMaskY = new double[filterSize, filterSize];
+            MatTool<double>.Forward(ref sigmaMaskX, (y, x, val) => {
+                sigmaMaskX[y, x] = (x - blockSize) * (x - blockSize);
+                sigmaMaskY[y, x] = (y - blockSize) * (y - blockSize);
+                return true;
+            });
+
+            // gabor filter equation:
+            //      reffilter = exp(refa) * cos(refb)
+            //      refa = - ( sigmaMaskX/(sigma**2) + sigmaMaskY/(sigma**2) )
+            //      refb = 2 * PI * median * sigmaMaskX
+            double sigmaSqr = sigma * sigma;
+            var refa = new Image<Gray, double>(filterSize, filterSize);
+            var refb = refa.Copy();
+            ImgTool<double>.Forward(ref refa, (y, x, val) => {
+                refa[y, x] = new Gray(- sigmaMaskX[y, x]/sigmaSqr - sigmaMaskY[y, x]/sigmaSqr);
+                refb[y, x] = new Gray(Cos(2 * PI * medianFreq * sigmaMaskX[y, x]));
+                return true;
+            });
+            CvInvoke.Exp(refa, refa);
+
+            double[,] refFilter = new double[filterSize, filterSize];
+            MatTool<double>.Forward(ref refFilter, (y, x, val) => {
+                refFilter[y, x] = refa[y, x].Intensity * refb[y, x].Intensity;
+                return true;
+            });
+
+            var gaborFilter = new List<double[,]>();
+
+            // rotate the filter
+            for (int deg = 0; deg <= 180; deg += ANGLE_INC) {
+                gaborFilter.Add(AffineRotation<double>.KeepSizeCreate(refFilter, -(deg + 90) / 180 * PI));
+            }
+
+            // Convert orientation matrix values from radians
+            // to an index value that corresponds to round(degrees/angleInc)
+            int mxOrientIndex = (int) Round(180f / ANGLE_INC);
+            int[,] orientIndex = new int[orient.GetLength(0), orient.GetLength(1)];
+            MatTool<double>.Forward(ref orient, (y, x, val) => {
+                orientIndex[y, x] = (int) Round((val / PI * 180) / ANGLE_INC);
+                return true;
+            });
+
+            // 
+
+            return res;
+        }
+
+        static public double GetMedianFreq(double[,] freq) {
             List<double> freqList = new();
             MatTool<double>.Forward(ref freq, (y, x, val) => {
                 if (val > 0) {
@@ -23,43 +91,7 @@ namespace FingerprintRecognition.Filter {
 
             // get the median frequency
             freqList.Sort();
-            double medianFreq = freqList.ToList()[freqList.Count >> 1];
-
-            Console.WriteLine("medianFreq: {0}", medianFreq);
-
-            // Generate filters corresponding to these distinct frequencies and
-            // orientations in 'ANGLE_INC' increments.
-            double sigma = 1 / medianFreq * 0.65;
-            int blockSize = (int)Round(3.0 * sigma);
-            double[,] sigmaMaskX = new double[blockSize<<1|1, blockSize<<1|1];
-            double[,] sigmaMaskY = new double[blockSize<<1|1, blockSize<<1|1];
-            MatTool<double>.Forward(ref sigmaMaskX, (y, x, val) => {
-                sigmaMaskX[y, x] = (x - blockSize) * (x - blockSize);
-                sigmaMaskY[y, x] = (y - blockSize) * (y - blockSize);
-                return true;
-            });
-
-            // gabor filter equation:
-            //      reffilter = exp(refa) * cos(refb)
-            //      refa = - ( sigmaMaskX/(sigma**2) + sigmaMaskY/(sigma**2) )
-            //      refb = 2 * PI * median * sigmaMaskX
-            double sigmaSqr = sigma * sigma;
-            var refa = new Image<Gray, double>(sigmaMaskX.GetLength(1), sigmaMaskX.GetLength(0));
-            var refb = refa.Copy();
-            ImgTool<double>.Forward(ref refa, (y, x, val) => {
-                refa[y, x] = new Gray(- sigmaMaskX[y, x]/sigmaSqr - sigmaMaskY[y, x]/sigmaSqr);
-                refb[y, x] = new Gray(Cos(2 * PI * medianFreq * sigmaMaskX[y, x]));
-                return true;
-            });
-            CvInvoke.Exp(refa, refa);
-
-            double[,] reffilter = new double[refa.Height, refa.Width];
-            MatTool<double>.Forward(ref reffilter, (y, x, val) => {
-                reffilter[y, x] = refa[y, x].Intensity * refb[y, x].Intensity;
-                return true;
-            });
-
-            return res;
+            return freqList.ToList()[freqList.Count >> 1];
         }
     }
 }

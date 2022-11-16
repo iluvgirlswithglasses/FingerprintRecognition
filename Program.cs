@@ -41,7 +41,7 @@ norm = Normalization.ExcludeBackground(norm, segmentMask, BLOCK_SIZE);
 // get frequency
 double[,] freq = RidgeFrequencyMat.Create(norm, segmentMask, orient, BLOCK_SIZE, 5);
 // gabor filter
-bool[,] gabor = Gabor.Create(norm, orient, freq);
+bool[,] gabor = Gabor.Create(norm, orient, freq, BLOCK_SIZE);
 
 /** @ debug */
 CvInvoke.Imwrite(CWD + "sample-images-o\\normalized.jpg", norm);
