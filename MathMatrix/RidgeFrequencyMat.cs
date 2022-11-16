@@ -11,22 +11,32 @@ namespace FingerprintRecognition.MathMatrix {
 
         /*
         norm:   normalized image after excluding background, size [h, w]
-        msk:    the segmentation mask, size [h/bs, w/bs]
+        msk:    the segmentation mask, size [h, w]
         orient: the orient matrix, size [h/bs, w/bs]
         bs:     block size
         ks:     kernel size
         */
         static public double[,] Create(Image<Gray, double> norm, bool[,] msk, double[,] orient, int bs, int ks, int minWaveLength=5, int maxWavelength=15) {
-            int h = msk.GetLength(0), w = msk.GetLength(1);
-            double[,] freq = new double[h, w];
+            double[,] freq = new double[norm.Height, norm.Width];
 
-            Iterator2D.Forward(h, w, (y, x) => {
+            Iterator2D.Forward(orient.GetLength(0), orient.GetLength(1), (y, x) => {
                 double angle = orient[y, x];
                 if (angle != 0) {
-                    freq[y, x] = Query(
+                    double val = Query(
                         norm, y * bs, x * bs, Min(y * bs + bs, norm.Height), Min(x * bs + bs, norm.Width), angle, ks, minWaveLength, maxWavelength
                     );
+                    if (val != 0.0) {
+                        MatTool<double>.Forward(ref freq, y * bs, x * bs, y * bs + bs, x * bs + bs, (r, c, _v) => {
+                            freq[r, c] = val;
+                            return true;
+                        });
+                    }
                 }
+                return true;
+            });
+
+            MatTool<double>.Forward(ref freq, (y, x, v) => {
+                freq[y, x] = v * Convert.ToInt32(msk[y, x]);
                 return true;
             });
 
@@ -68,7 +78,7 @@ namespace FingerprintRecognition.MathMatrix {
             avg /= ridgeSum.Length;
 
             // get dilation and filter out noise
-            double[] dilation = Morphology.SimpleGrayDilation(ridgeSum, 3, 1);
+            double[] dilation = Morphology.SimpleGrayDilation(ridgeSum, ks, 1);
             double[] ridgeNoise = new double[dilation.Length];
             for (int x = 0; x < width; x++)
                 ridgeNoise[x] = Abs(dilation[x] - ridgeSum[x]);

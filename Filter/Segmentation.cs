@@ -55,13 +55,13 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
-        static public Image<Gray, double> ApplyMask(Image<Gray, double> src, bool[,] msk, int w) {
+        static public Image<Gray, double> ApplyMask(Image<Gray, double> src, bool[,] msk) {
             var res = new Image<Gray, double>(src.Size);
 
             /** apply mask */
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
-                    if (msk[y / w, x / w]) 
+                    if (msk[y, x]) 
                         res[y, x] = new Gray(src[y, x].Intensity);
 
             return res;

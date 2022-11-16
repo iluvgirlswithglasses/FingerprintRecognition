@@ -41,7 +41,7 @@ namespace FingerprintRecognition.Filter {
             return res;
         }
 
-        static public Image<Gray, double> ExcludeBackground(Image<Gray, double> norm, bool[,] msk, int w) {
+        static public Image<Gray, double> ExcludeBackground(Image<Gray, double> norm, bool[,] msk) {
             var res = new Image<Gray, double>(norm.Size);
 
             int n = 0;
@@ -49,11 +49,8 @@ namespace FingerprintRecognition.Filter {
 
             MatTool<bool>.Forward(ref msk, (y, x, v) => {
                 if (!v) {
-                    ImgTool<double>.Forward(ref norm, y*w, x*w, y*w + w, x*w + w, (_y, _x, val) => {
-                        sum += val;
-                        n++;
-                        return true;
-                    });
+                    sum += norm[y, x].Intensity;
+                    n++;
                 }
                 return true;
             });
@@ -62,9 +59,7 @@ namespace FingerprintRecognition.Filter {
 
             MatTool<bool>.Forward(ref msk, (y, x, v) => {
                 if (!v)
-                    std += ImgTool<double>.Sum(
-                        ref norm, y*w, x*w, y*w + w, x*w + w, (x) => { return (x - avg) * (x - avg); }
-                    );
+                    std += (norm[y, x].Intensity - avg) * (norm[y, x].Intensity - avg);
                 return true;
             });
 

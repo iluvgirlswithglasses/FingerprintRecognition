@@ -9,9 +9,9 @@ namespace FingerprintRecognition.Filter {
     internal class Gabor {
 
         /** 
-         * `norm`:      normalized imaged
+         * `norm`:      normalized imaged, size [ h, w ]
          * `orient`:    the orient matrix, size [ h / blocksize, w / blocksize ]
-         * `freq`:      the frequency matrix, size [ h / blocksize, w / blocksize ]
+         * `freq`:      the frequency matrix, size [ h, w ]
          * */
         static public double[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq, int imgBlockSize) {
 
