@@ -73,8 +73,8 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
-            Console.WriteLine("medianFreq = {0}, blockSize = {1}, filterSize = {2}", medianFreq, blockSize, filterSize);
-            Console.WriteLine("MaxOrientIndex = {0}", maxOrientIndex);
+            // Console.WriteLine("medianFreq = {0}, blockSize = {1}, filterSize = {2}", medianFreq, blockSize, filterSize);
+            // Console.WriteLine("MaxOrientIndex = {0}", maxOrientIndex);
 
             // 
             MatTool<int>.Forward(ref orientIndex, (y, x, val) => {
@@ -85,14 +85,7 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
-            for (int y = 0; y < orientIndex.GetLength(0); y++) {
-                for (int x = 0; x < orientIndex.GetLength(1); x++) {
-                    Console.Write("{0} ", orientIndex[y, x]);
-                }
-                Console.WriteLine();
-            }
-
-            Console.WriteLine("------- above is correct -------");
+            // Console.WriteLine("------- above is correct -------");
 
             //
             Iterator2D.Forward(blockSize, blockSize, h - blockSize, w - blockSize, (y, x) => {

@@ -19,7 +19,7 @@ const int BLOCK_SIZE = 16;
 
 /** @ temporary constants */
 const string CWD    = "D:\\r\\siglaz\\FingerprintRecognition\\";
-const string SOURCE = CWD + "sample-images\\0.jpg";
+const string SOURCE = CWD + "sample-images\\2.jpg";
 const string TARGET = CWD + "sample-images\\2.jpg";
 
 /** @ get files */
@@ -30,29 +30,22 @@ FImage target = new(new Image<Gray, byte>(TARGET));
 // make the image smooth, both shape-wise and color-wise
 // target.Src = Smooth.LibBlur(ref target.Src);
 Image<Gray, double> norm = Normalization.Normalize(target.Src, 100.0, 100.0);
+
 // focus on the fingerprint
 bool[,] segmentMask = Segmentation.CreateMask(norm, BLOCK_SIZE);
-Image<Gray, double> segmented = Segmentation.ApplyMask(norm, segmentMask, BLOCK_SIZE);
+// Image<Gray, double> segmented = Segmentation.ApplyMask(norm, segmentMask, BLOCK_SIZE);  // HERE
 // seperates the ridges
-norm = Normalization.AllignAvg(norm);
+// norm = Normalization.AllignAvg(norm);
 // get gradient image
-double[,] orient = OrientMat.Create(norm, BLOCK_SIZE);
-norm = Normalization.ExcludeBackground(norm, segmentMask, BLOCK_SIZE);
+// double[,] orient = OrientMat.Create(norm, BLOCK_SIZE);
+// norm = Normalization.ExcludeBackground(norm, segmentMask, BLOCK_SIZE);                  // AND HERE
 // get frequency
-double[,] freq = RidgeFrequencyMat.Create(norm, segmentMask, orient, BLOCK_SIZE, 5);
+// double[,] freq = RidgeFrequencyMat.Create(norm, segmentMask, orient, BLOCK_SIZE, 5);    // HERE
 // gabor filter
-double[,] gabor = Gabor.Create(norm, orient, freq, BLOCK_SIZE);
+// double[,] gabor = Gabor.Create(norm, orient, freq, BLOCK_SIZE);
 
 /** @ debug */
 CvInvoke.Imwrite(CWD + "sample-images-o\\normalized.jpg", norm);
-CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleImage(segmented));
-Image<Gray, byte> orientImg = OrientMat.Visualize(segmented, segmentMask, orient, BLOCK_SIZE);
-CvInvoke.Imwrite(CWD + "sample-images-o\\orient-img.jpg", orientImg);
-CvInvoke.Imwrite(CWD + "sample-images-o\\gabor-filter.jpg", ToImage.FromDoubleMatrix(gabor));
-
-for (int y = 0; y < norm.Height; y++) {
-    for (int x = 0; x < norm.Width; x++) {
-        Console.Write("{0} ", Math.Round(norm[y, x].Intensity * 100) / 100);
-    }
-    Console.WriteLine();
-}
+CvInvoke.Imwrite(CWD + "sample-images-o\\mask.jpg", ToImage.FromBinaryArray(segmentMask));
+// CvInvoke.Imwrite(CWD + "sample-images-o\\segmented.jpg", ToImage.FromDoubleImage(segmented));
+// CvInvoke.Imwrite(CWD + "sample-images-o\\gabor-filter.jpg", ToImage.FromDoubleMatrix(gabor));

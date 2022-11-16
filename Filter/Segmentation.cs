@@ -1,7 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Tool;
-using FingerprintRecognition.Transform;
 using static System.Math;
 
 namespace FingerprintRecognition.Filter
@@ -16,27 +15,44 @@ namespace FingerprintRecognition.Filter
          * w:   kernel size
          */
         static public bool[,] CreateMask(Image<Gray, double> src, int w) {
-            // msk[y, x] manages the block[ y*w : (y+1)*w ][ x*w : (x+1)*w ]
-            var msk = new bool[
-                (int)Ceiling(Convert.ToDouble(src.Height) / w),
-                (int)Ceiling(Convert.ToDouble(src.Width) / w)
-            ];
+            var res = new bool[src.Height, src.Width];
+
+            Image<Gray, double> msk = new(src.Size);
             var threshold = 0.2 * ImgTool<double>.Std(ref src);
 
-            MatTool<bool>.Forward(ref msk, (y, x, v) => {
-                double std = ImgTool<double>.Std(
-                    ref src, y * w, x * w, y * w + w, x * w + w
-                );
-                msk[y, x] = std >= threshold;
-                return true;
-            });
+            for (int y = 0; y < src.Height; y+=w) {
+                for (int x = 0; x < src.Width; x+=w) {
+                    double std = ImgTool<double>.Std(
+                        ref src, y, x, y + w, x + w
+                    );
+                    if (std >= threshold) {
+                        ImgTool<double>.Forward(ref msk, y, x, y + w, x + w, (r, c, val) => {
+                            msk[r, c] = new Gray(255);
+                            return true;
+                        });
+                    }
+                }
+            }
 
             // apply Morphological Opening & Closing to the mask
             // https://docs.opencv.org/4.x/d9/d61/tutorial_py_morphological_ops.html
-            Morphology.Open(ref msk);
-            Morphology.Close(ref msk);
+            var kernel = CvInvoke.GetStructuringElement(
+                Emgu.CV.CvEnum.ElementShape.Ellipse, 
+                new System.Drawing.Size(w << 1, w << 1), 
+                new System.Drawing.Point(-1, -1)
+            );
+            var center = new System.Drawing.Point(-1, -1);
+            var border = Emgu.CV.CvEnum.BorderType.Default;
 
-            return msk;
+            CvInvoke.MorphologyEx(msk, msk, Emgu.CV.CvEnum.MorphOp.Open, kernel, center, 1, border, new Gray(0).MCvScalar);
+            CvInvoke.MorphologyEx(msk, msk, Emgu.CV.CvEnum.MorphOp.Close, kernel, center, 1, border, new Gray(0).MCvScalar);
+
+            // cast to bool[]
+            ImgTool<double>.Forward(ref msk, (y, x, v) => {
+                res[y, x] = v > 0;
+                return true;
+            });
+            return res;
         }
 
         static public Image<Gray, double> ApplyMask(Image<Gray, double> src, bool[,] msk, int w) {

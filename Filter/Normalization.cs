@@ -13,7 +13,7 @@ namespace FingerprintRecognition.Filter {
                    v = ImgTool<byte>.Std(ref src);
 
             ImgTool<byte>.Forward(ref src, (y, x, val) => {
-                res[y, x] = new Gray(NormalizePixel(m0, v0, val, m, v));
+                res[y, x] = new Gray(Floor(NormalizePixel(m0, v0, val, m, v)));
                 return true;
             });
 

@@ -7,7 +7,7 @@ namespace FingerprintRecognition.MatrixConverter {
     internal class ToImage {
 
         static public Image<Gray, byte> FromBinaryArray(bool[,] bin) {
-            var res = new Image<Gray, byte>(bin.GetLength(0), bin.Length);
+            var res = new Image<Gray, byte>(bin.GetLength(1), bin.GetLength(0));
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
                     res[y, x] = new Gray(255.0 * Convert.ToInt32(bin[y, x]));
