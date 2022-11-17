@@ -86,13 +86,13 @@ namespace FingerprintRecognition.Filter {
             Iterator2D.Forward(blockSize, blockSize, h - blockSize, w - blockSize, (y, x) => {
                 if (freq[y, x] <= 0)
                     return false;
-                int angleInd = orientIndex[y / 16, x / 16] - 1;
+                int angleInd = orientIndex[y / 16, x / 16];
                 //
                 for (int r = 0; r < filterSize; r++) {
                     for (int c = 0; c < filterSize; c++) {
                         int localY = y - blockSize + r;
                         int localX = x - blockSize + c;
-                        res[r, c] += norm[localY, localX].Intensity * gaborFilter[angleInd][r, c];
+                        res[y, x] += norm[localY, localX].Intensity * gaborFilter[angleInd][r, c];
                     }
                 }
                 return true;
