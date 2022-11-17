@@ -34,7 +34,7 @@ namespace FingerprintRecognition.MathMatrix {
                     b += xAngle*xAngle - yAngle*yAngle;
                 }
 
-                if (a != 0.0 && b != 0.0) 
+                if (a != 0.0 || b != 0.0)
                     res[y0 / w, x0 / w] = (PI + Atan2(a, b)) / 2;
             }
 

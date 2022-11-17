@@ -16,7 +16,6 @@ namespace FingerprintRecognition.Filter {
          * */
         static public double[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq, bool[,] msk, int imgBlockSize) {
 
-            const int ANGLE_INC = 3;
             int h = norm.Height, w = norm.Width;
 
             double[,] res = new double[h, w];
@@ -45,7 +44,7 @@ namespace FingerprintRecognition.Filter {
             var refb = refa.Copy();
             ImgTool<double>.Forward(ref refa, (y, x, val) => {
                 refa[y, x] = new Gray(
-                    - (sigmaMaskX[y, x] * sigmaMaskX[y, x])/sigmaSqr - (sigmaMaskY[y, x] * sigmaMaskY[y, x])/sigmaSqr
+                   (-(sigmaMaskX[y, x] * sigmaMaskX[y, x]) / sigmaSqr - (sigmaMaskY[y, x] * sigmaMaskY[y, x]) / sigmaSqr) / 2
                 );
                 refb[y, x] = new Gray(Cos(2 * PI * medianFreq * sigmaMaskX[y, x]));
                 return true;
@@ -58,15 +57,15 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
-            // QuickFilt(res, norm, orient, freq, refFilter, blockSize, filterSize, ANGLE_INC);
-            SlowFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize);
+            // QuickFilt(res, norm, orient, freq, refFilter, blockSize, filterSize, 3);
+            SlowFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
 
             // binary effect
             MatTool<double>.Forward(ref res, (y, x, val) => {
                 if (val < 0)
-                    res[y, x] = 0;
-                else
                     res[y, x] = 255;
+                else
+                    res[y, x] = 0;
                 return true;
             });
 
@@ -89,18 +88,24 @@ namespace FingerprintRecognition.Filter {
             return freqList.ToList()[freqList.Count >> 1];
         }
 
-        static private void SlowFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize) {
+        static private void SlowFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
+
+            // double[,] pseudoFilter = AffineRotation<double>.KeepSizeCreate(refFilter, 0);
+
             Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
                 if (!msk[y, x])
                     return false;
 
-                double angle = orient[y / 16, x / 16];
+                // trials and errors
+                double angle = PI/2 - orient[y / bs, x / bs];
                 double[,] filter = AffineRotation<double>.KeepSizeCreate(refFilter, angle);
 
                 for (int r = 0; r < filterSize; r++) {
                     for (int c = 0; c < filterSize; c++) {
                         int localY = y - blockSize + r;
                         int localX = x - blockSize + c;
+
+                        // res[y, x] += norm[localY, localX].Intensity * pseudoFilter[r, c];
                         res[y, x] += norm[localY, localX].Intensity * filter[r, c];
                     }
                 }

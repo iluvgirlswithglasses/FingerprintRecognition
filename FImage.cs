@@ -6,7 +6,10 @@ namespace FingerprintRecognition {
         public Image<Gray, byte> Src;
 
         public FImage(Image<Gray, byte> img) {
-            Src = img;
+            Src = new(img.Size);
+            for (int y = 0; y < img.Height; y++)
+                for (int x = 0; x < img.Width; x++)
+                    Src[y, x] = new Gray(255 - img[y, x].Intensity);
         }
     }
 }
