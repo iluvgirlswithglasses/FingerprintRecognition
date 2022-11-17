@@ -1,6 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Convolution;
+using FingerprintRecognition.Tool;
 using System.Drawing;
 using static System.Math;
 
