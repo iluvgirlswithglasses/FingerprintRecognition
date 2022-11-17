@@ -30,8 +30,8 @@ namespace FingerprintRecognition.Filter {
             double[,] sigmaMaskX = new double[filterSize, filterSize];
             double[,] sigmaMaskY = new double[filterSize, filterSize];
             MatTool<double>.Forward(ref sigmaMaskX, (y, x, val) => {
-                sigmaMaskX[y, x] = (x - blockSize) * (x - blockSize);
-                sigmaMaskY[y, x] = (y - blockSize) * (y - blockSize);
+                sigmaMaskX[y, x] = (x - blockSize);
+                sigmaMaskY[y, x] = (y - blockSize);
                 return true;
             });
 
@@ -43,7 +43,9 @@ namespace FingerprintRecognition.Filter {
             var refa = new Image<Gray, double>(filterSize, filterSize);
             var refb = refa.Copy();
             ImgTool<double>.Forward(ref refa, (y, x, val) => {
-                refa[y, x] = new Gray(- sigmaMaskX[y, x]/sigmaSqr - sigmaMaskY[y, x]/sigmaSqr);
+                refa[y, x] = new Gray(
+                    - (sigmaMaskX[y, x] * sigmaMaskX[y, x])/sigmaSqr - (sigmaMaskY[y, x] * sigmaMaskY[y, x])/sigmaSqr
+                );
                 refb[y, x] = new Gray(Cos(2 * PI * medianFreq * sigmaMaskX[y, x]));
                 return true;
             });
@@ -67,27 +69,22 @@ namespace FingerprintRecognition.Filter {
             int maxOrientIndex = (int) Round(180f / ANGLE_INC);
             int[,] orientIndex = new int[orient.GetLength(0), orient.GetLength(1)];
             MatTool<double>.Forward(ref orient, (y, x, val) => {
-                orientIndex[y, x] = (int) Round((val / PI * 180) / ANGLE_INC);
+                orientIndex[y, x] = (int) Round(val / PI * 180 / ANGLE_INC);
                 return true;
             });
 
-            // Console.WriteLine("medianFreq = {0}, blockSize = {1}, filterSize = {2}", medianFreq, blockSize, filterSize);
-            // Console.WriteLine("MaxOrientIndex = {0}", maxOrientIndex);
-
             // 
             MatTool<int>.Forward(ref orientIndex, (y, x, val) => {
-                if (val <= 0)
+                if (val < 1)
                     orientIndex[y, x] = val + maxOrientIndex;
                 if (val > maxOrientIndex)
                     orientIndex[y, x] = val - maxOrientIndex;
                 return true;
             });
 
-            // Console.WriteLine("------- above is correct -------");
-
             //
             Iterator2D.Forward(blockSize, blockSize, h - blockSize, w - blockSize, (y, x) => {
-                if (freq[y/16, x/16] <= 0)
+                if (freq[y, x] <= 0)
                     return false;
                 int angleInd = orientIndex[y / 16, x / 16] - 1;
                 //
