@@ -82,7 +82,8 @@ namespace FingerprintRecognition.Filter {
                     return false;
 
                 // trials and errors
-                double angle = PI/2 - orient[y / bs, x / bs];
+                double angle = PI / 2 - orient[y / bs, x / bs];
+                // this can be cached later
                 double[,] filter = AffineRotation<double>.KeepSizeCreate(refFilter, angle);
 
                 for (int r = 0; r < filterSize; r++) {
