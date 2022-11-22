@@ -1,6 +1,7 @@
-﻿using Emgu.CV;
+﻿using System.Text;
+using Emgu.CV;
+using Emgu.CV.ML;
 using Emgu.CV.Structure;
-using Emgu.CV.Text;
 using FingerprintRecognition.Tool;
 using FingerprintRecognition.Transform;
 using static System.Math;
@@ -57,8 +58,8 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
-            // QuickFilt(res, norm, orient, freq, refFilter, blockSize, filterSize, 3);
             SlowFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
+            // QuickFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
 
             // binary effect
             MatTool<double>.Forward(ref res, (y, x, val) => {
@@ -70,22 +71,6 @@ namespace FingerprintRecognition.Filter {
             });
 
             return res;
-        }
-
-        static public double GetMedianFreq(double[,] freq) {
-            List<double> freqList = new();
-            MatTool<double>.Forward(ref freq, (y, x, val) => {
-                if (val > 0) {
-                    // round to nearest 0.01
-                    double rnd = Round(val * 100) / 100.0;
-                    freqList.Add(val);
-                }
-                return true;
-            });
-
-            // get the median frequency
-            freqList.Sort();
-            return freqList.ToList()[freqList.Count >> 1];
         }
 
         static private void SlowFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
@@ -114,51 +99,21 @@ namespace FingerprintRecognition.Filter {
             });
         }
 
-        static private void QuickFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, int blockSize, int filterSize, int ANGLE_INC) {
-
-            var gaborFilter = new List<double[,]>();
-
-            int h = norm.Height, w = norm.Width;
-
-            // rotate the filter
-            for (int deg = 0; deg <= 180; deg += ANGLE_INC) {
-                gaborFilter.Add(AffineRotation<double>.KeepSizeCreate(refFilter, -(deg + 90) / 180 * PI));
-            }
-
-            // Convert orientation matrix values from radians
-            // to an index value that corresponds to round(degrees/angleInc)
-            int maxOrientIndex = (int)Round(180f / ANGLE_INC);
-            int[,] orientIndex = new int[orient.GetLength(0), orient.GetLength(1)];
-            MatTool<double>.Forward(ref orient, (y, x, val) => {
-                orientIndex[y, x] = (int)Round(val / PI * 180 / ANGLE_INC);
-                return true;
-            });
-
-            // 
-            MatTool<int>.Forward(ref orientIndex, (y, x, val) => {
-                if (val < 1)
-                    orientIndex[y, x] = val + maxOrientIndex;
-                if (val > maxOrientIndex)
-                    orientIndex[y, x] = val - maxOrientIndex;
-                return true;
-            });
-
-            //
-            Iterator2D.Forward(blockSize, blockSize, h - blockSize, w - blockSize, (y, x) => {
-                //if (!msk[y, x])
-                if (freq[y, x] <= 0)
-                    return false;
-                int angleInd = orientIndex[y / 16, x / 16];
-                //
-                for (int r = 0; r < filterSize; r++) {
-                    for (int c = 0; c < filterSize; c++) {
-                        int localY = y - blockSize + r;
-                        int localX = x - blockSize + c;
-                        res[y, x] += norm[localY, localX].Intensity * gaborFilter[angleInd][r, c];
-                    }
+        /** @ tools */
+        static public double GetMedianFreq(double[,] freq) {
+            List<double> freqList = new();
+            MatTool<double>.Forward(ref freq, (y, x, val) => {
+                if (val > 0) {
+                    // round to nearest 0.01
+                    double rnd = Round(val * 100) / 100.0;
+                    freqList.Add(val);
                 }
                 return true;
             });
+
+            // get the median frequency
+            freqList.Sort();
+            return freqList.ToList()[freqList.Count >> 1];
         }
     }
 }
