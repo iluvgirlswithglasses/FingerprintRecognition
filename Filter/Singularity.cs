@@ -13,10 +13,9 @@ namespace FingerprintRecognition.Filter {
             new Bgr(255, 128, 255), // whorl
         };
 
-        readonly KeyValuePair<int, int>[,] WEIGHT = {
-            { new(-1, -1), new(-1, +0), new(-1, +1), },
-            { new(+0, +1), new(+1, +1), new(+1, +0) },
-            { new(+1, -1), new(+0, -1), new(-1, -1) }
+        readonly KeyValuePair<int, int>[] RELATIVE = {
+            // this goes round
+            new(-1, -1), new(-1, +0), new(-1, +1), new(+0, +1), new(+1, +1), new(+1, +0), new(+1, -1), new(+0, -1), new(-1, -1)
         };
 
         public Image<Bgr, byte> Create(bool[,] ske, double[,] orient, int w, bool[,] msk) {
@@ -45,10 +44,27 @@ namespace FingerprintRecognition.Filter {
             return res;
         }
 
-        public int PoinCare(double[,] orient, int y, int x) {
-            double[,] surroundingAngle = new double[3, 3];
-            
+        public int PoinCare(double[,] orient, int y, int x, int margin) {
+            double[] surroundingAngle = new double[9];
+            for (int i = 0; i < 9; i++)
+                surroundingAngle[i] = orient[y + RELATIVE[i].Key, x + RELATIVE[i].Value] / PI * 180;
+            double total = 0;
+            for (int i = 0; i < 8; i++) {
+                double diff = surroundingAngle[i] - surroundingAngle[i+1];
+                if (diff > 90)
+                    diff -= 180;
+                else if (diff < -90)
+                    diff += 180;
+                total += diff;
+            }
+
             // COLORS[i]: the color of code `i`
+            if (180 - margin <= total && total <= 180 + margin)
+                return 0;
+            if (-180 - margin <= total && total <= -180 + margin)
+                return 1;
+            if (360 - margin <= total && total <= 360 + margin)
+                return 2;
             return -1;
         }
     }
