@@ -119,7 +119,7 @@ namespace FingerprintRecognition.Filter {
         static private void QuickFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
             double angleInc = PI * 3 / 180;
             List<double> acceptedAngles = new();
-            for (double i = 0.0; i <= PI; i += angleInc)
+            for (double i = -PI/2; i <= PI/2; i += angleInc)
                 acceptedAngles.Add(i);
             List<double> compressed = CompressAngle(orient, acceptedAngles);
             //
@@ -152,7 +152,7 @@ namespace FingerprintRecognition.Filter {
             SortedSet<double> compressed = new();
             MatTool<double>.Forward(ref orient, (y, x, v) => {
                 compressed.Add(
-                    acceptedAngles[LowerBound(acceptedAngles, v)]
+                    acceptedAngles[LowerBound(acceptedAngles, PI/2 - v)]
                 );
                 return true;
             });
