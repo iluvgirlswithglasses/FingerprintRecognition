@@ -10,6 +10,22 @@ namespace FingerprintRecognition.Filter {
 
     internal class Gabor {
 
+        static public double GetMedianFreq(double[,] freq) {
+            List<double> freqList = new();
+            MatTool<double>.Forward(ref freq, (y, x, val) => {
+                if (val > 0) {
+                    // round to nearest 0.01
+                    double rnd = Round(val * 100) / 100.0;
+                    freqList.Add(val);
+                }
+                return true;
+            });
+
+            // get the median frequency
+            freqList.Sort();
+            return freqList.ToList()[freqList.Count >> 1];
+        }
+
         /** 
          * `norm`:      normalized imaged, size [ h, w ]
          * `orient`:    the orient matrix, size [ h / blocksize, w / blocksize ]
@@ -100,21 +116,40 @@ namespace FingerprintRecognition.Filter {
             });
         }
 
+        static private void QuickFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
+            double angleInc = PI * 3 / 180;
+            List<double> acceptedAngles = new();
+            for (double i = 0.0; i <= PI; i += angleInc)
+                acceptedAngles.Add(i);
+            List<double> compressed = CompressAngle(orient, acceptedAngles);
+            //
+            List<double[,]> filters = new();
+            foreach (double angle in compressed)
+                filters.Add(AffineRotation<double>.KeepSizeCreate(refFilter, angle));
+        }
+
         /** @ tools */
-        static public double GetMedianFreq(double[,] freq) {
-            List<double> freqList = new();
-            MatTool<double>.Forward(ref freq, (y, x, val) => {
-                if (val > 0) {
-                    // round to nearest 0.01
-                    double rnd = Round(val * 100) / 100.0;
-                    freqList.Add(val);
-                }
+        static private List<double> CompressAngle(double[,] orient, List<double> acceptedAngles) {
+            SortedSet<double> compressed = new();
+            MatTool<double>.Forward(ref orient, (y, x, v) => {
+                compressed.Add(
+                    acceptedAngles[LowerBound(acceptedAngles, v)]
+                );
                 return true;
             });
+            return new List<double>(compressed);
+        }
 
-            // get the median frequency
-            freqList.Sort();
-            return freqList.ToList()[freqList.Count >> 1];
+        static private int LowerBound(List<double> ls, double x) {
+            int l = 0, r = ls.Count;
+            while (l < r) {
+                int m = (l + r + 0) >> 1;
+                if (ls[m] >= x)
+                    r = m;
+                else
+                    l = m + 1;
+            }
+            return r;
         }
     }
 }

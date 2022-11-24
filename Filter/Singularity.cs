@@ -1,15 +1,22 @@
-﻿
-using Emgu.CV;
+﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Tool;
+using static System.Math;
 
 namespace FingerprintRecognition.Filter {
 
     public class Singularity {
+
         readonly Bgr[] COLORS = {
             new Bgr(0, 0, 255),     // loop
             new Bgr(0, 128, 255),   // delta
             new Bgr(255, 128, 255), // whorl
+        };
+
+        readonly KeyValuePair<int, int>[,] WEIGHT = {
+            { new(-1, -1), new(-1, +0), new(-1, +1), },
+            { new(+0, +1), new(+1, +1), new(+1, +0) },
+            { new(+1, -1), new(+0, -1), new(-1, -1) }
         };
 
         public Image<Bgr, byte> Create(bool[,] ske, double[,] orient, int w, bool[,] msk) {
@@ -39,6 +46,8 @@ namespace FingerprintRecognition.Filter {
         }
 
         public int PoinCare(double[,] orient, int y, int x) {
+            double[,] surroundingAngle = new double[3, 3];
+            
             // COLORS[i]: the color of code `i`
             return -1;
         }
