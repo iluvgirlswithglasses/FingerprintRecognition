@@ -126,6 +126,25 @@ namespace FingerprintRecognition.Filter {
             List<double[,]> filters = new();
             foreach (double angle in compressed)
                 filters.Add(AffineRotation<double>.KeepSizeCreate(refFilter, angle));
+            //
+            Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
+                if (!msk[y, x])
+                    return false;
+
+                // trials and errors
+                double angle = PI / 2 - orient[y / bs, x / bs];
+
+                for (int r = 0; r < filterSize; r++) {
+                    for (int c = 0; c < filterSize; c++) {
+                        int localY = y - blockSize + r;
+                        int localX = x - blockSize + c;
+
+                        res[y, x] += norm[localY, localX].Intensity * filters[LowerBound(compressed, angle)][r, c];
+                    }
+                }
+
+                return true;
+            });
         }
 
         /** @ tools */
@@ -141,7 +160,7 @@ namespace FingerprintRecognition.Filter {
         }
 
         static private int LowerBound(List<double> ls, double x) {
-            int l = 0, r = ls.Count;
+            int l = 0, r = ls.Count - 1;    // there's no ls.end() returned
             while (l < r) {
                 int m = (l + r + 0) >> 1;
                 if (ls[m] >= x)
