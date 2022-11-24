@@ -17,7 +17,8 @@ const string SOURCE = CWD + "sample-images\\2.jpg";
 const string TARGET = CWD + "sample-images\\2.jpg";
 
 /** @ get files */
-FImage source = new(new Image<Gray, byte>(SOURCE));
-FImage target = new(new Image<Gray, byte>(TARGET));
+FImage source = new(new Image<Gray, byte>(SOURCE), BLOCK_SIZE);
+FImage target = new(new Image<Gray, byte>(TARGET), BLOCK_SIZE);
 
-target.PreprocessProcedure(BLOCK_SIZE);
+target.PreprocessProcedure();
+target.DetectSingularity();
