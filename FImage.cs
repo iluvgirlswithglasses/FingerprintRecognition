@@ -2,8 +2,6 @@
 using Emgu.CV.Structure;
 using FingerprintRecognition.Filter;
 using FingerprintRecognition.MathMatrix;
-using FingerprintRecognition.MatrixConverter;
-using FingerprintRecognition.Tool;
 
 namespace FingerprintRecognition {
 
@@ -12,48 +10,48 @@ namespace FingerprintRecognition {
         const string DEBUG = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 
         /** @ img matrix */
+        int BlockSize;
         public Image<Gray, byte> Src;
 
-        /** @ */
-        int BLOCK_SIZE;
-        Image<Gray, double> norm;
-        bool[,] segmentMask;
-        Image<Gray, double> segmented;
-        double[,] orient;
-        double[,] freq;
-        bool[,] gabor;
+        /** @ pre-processing */
+        Image<Gray, double> Norm;
+        // Image<Gray, double> SegmentImg;
+        bool[,] SegmentMask;
+        double[,] OrientImg;
+        double[,] FrequencyImg;
+        bool[,] Skeleton;
+
+        /** @ singularity matrices */
+        
 
         public FImage(Image<Gray, byte> img, int bs) {
-            BLOCK_SIZE = bs;
+            BlockSize = bs;
             Src = new(img.Size);
             for (int y = 0; y < img.Height; y++)
                 for (int x = 0; x < img.Width; x++)
                     Src[y, x] = new Gray(255 - img[y, x].Intensity);
-        }
 
-        public void PreprocessProcedure() {
             // make the image smooth, both shape-wise and color-wise
             // target.Src = Smooth.LibBlur(ref target.Src);
-            norm = Normalization.Normalize(Src, 100.0, 100.0);
+            Norm = Normalization.Normalize(Src, 100.0, 100.0);
 
             // focus on the fingerprint
-            segmentMask = Segmentation.CreateMask(norm, BLOCK_SIZE);
-            segmented = Segmentation.ApplyMask(norm, segmentMask);
+            SegmentMask = Segmentation.CreateMask(Norm, BlockSize);
+            // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
             // seperates the ridges
-            norm = Normalization.AllignAvg(norm);
+            Norm = Normalization.AllignAvg(Norm);
             // get gradient image
-            orient = OrientMat.Create(norm, BLOCK_SIZE);
-            norm = Normalization.ExcludeBackground(norm, segmentMask);
+            OrientImg = OrientMat.Create(Norm, BlockSize);
+            Norm = Normalization.ExcludeBackground(Norm, SegmentMask);
             // get frequency
-            freq = RidgeFrequencyMat.Create(norm, segmentMask, orient, BLOCK_SIZE, 5);
-            // gabor filter
-            gabor = Binary.Create(Gabor.Create(norm, orient, freq, segmentMask, BLOCK_SIZE), 100);
-            // skeletonization
-            new Skeletonization(gabor).Apply();
+            FrequencyImg = RidgeFrequencyMat.Create(Norm, SegmentMask, OrientImg, BlockSize, 5);
+            // gabor filter, then skeletonization
+            Skeleton = Binary.Create(Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize), 100);
+            new Skeletonization(Skeleton).Apply();
         }
 
         public Image<Bgr, byte> DetectSingularity() {
-            Image<Bgr, byte> res = Singularity.Create(gabor, orient, BLOCK_SIZE, segmentMask);
+            Image<Bgr, byte> res = Singularity.Create(Skeleton, OrientImg, BlockSize, SegmentMask);
             CvInvoke.Imwrite(DEBUG + "pts.png", res);
             return res;
         }
