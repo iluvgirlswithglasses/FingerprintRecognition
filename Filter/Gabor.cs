@@ -74,8 +74,8 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
-            SlowFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
-            // QuickFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
+            // SlowFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
+            QuickFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
 
             // binary effect
             MatTool<double>.Forward(ref res, (y, x, val) => {
@@ -92,6 +92,8 @@ namespace FingerprintRecognition.Filter {
         static private void SlowFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
 
             // double[,] pseudoFilter = AffineRotation<double>.KeepSizeCreate(refFilter, 0);
+
+            Console.WriteLine("Entering Slow Filt Gabor...");
 
             Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
                 if (!msk[y, x])
@@ -117,6 +119,9 @@ namespace FingerprintRecognition.Filter {
         }
 
         static private void QuickFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
+
+            Console.WriteLine("Entering Quick Filt Gabor...");
+
             double angleInc = PI * 3 / 180;
             List<double> acceptedAngles = new();
             for (double i = -PI/2; i <= PI/2; i += angleInc)
@@ -126,6 +131,8 @@ namespace FingerprintRecognition.Filter {
             List<double[,]> filters = new();
             foreach (double angle in compressed)
                 filters.Add(AffineRotation<double>.KeepSizeCreate(refFilter, angle));
+
+            Console.WriteLine("Entering Convolution Stage of Quick Filt Gabor...");
             //
             Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
                 if (!msk[y, x])
@@ -133,13 +140,14 @@ namespace FingerprintRecognition.Filter {
 
                 // trials and errors
                 double angle = PI / 2 - orient[y / bs, x / bs];
+                int angleInd = LowerBound(compressed, angle);
 
                 for (int r = 0; r < filterSize; r++) {
                     for (int c = 0; c < filterSize; c++) {
                         int localY = y - blockSize + r;
                         int localX = x - blockSize + c;
 
-                        res[y, x] += norm[localY, localX].Intensity * filters[LowerBound(compressed, angle)][r, c];
+                        res[y, x] += norm[localY, localX].Intensity * filters[angleInd][r, c];
                     }
                 }
 
