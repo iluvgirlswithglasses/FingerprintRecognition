@@ -1,7 +1,8 @@
-﻿using FingerprintRecognition.Algorithm;
+﻿using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Tool;
 
-namespace FingerprintRecognition.Filter {
+namespace FingerprintRecognition.Filter
+{
 
     public class Skeletonization {
         bool[,] Img;

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
+using FingerprintRecognition.Algorithm;
 
-namespace FingerprintRecognition.Algorithm
+namespace FingerprintRecognition.DataStructure
 {
     /// <summary>
     /// A double-ended queue (deque), which provides O(1) indexed access, O(1) removals from the front and back, amortized O(1) insertions to the front and back, and O(N) insertions and removals anywhere else (with the operations getting slower as the index approaches the middle).
@@ -386,7 +387,7 @@ namespace FingerprintRecognition.Algorithm
             get
             {
                 // Overflow-safe version of "(offset + Count) > Capacity"
-                return _offset > (Capacity - Count);
+                return _offset > Capacity - Count;
             }
         }
 
@@ -424,7 +425,7 @@ namespace FingerprintRecognition.Algorithm
         /// </summary>
         /// <returns>The number of elements contained in this deque.</returns>
         public int Count { get; private set; }
-        
+
         /// <summary>
         /// Applies the offset to <paramref name="index"/>, resulting in a buffer index.
         /// </summary>
@@ -633,7 +634,7 @@ namespace FingerprintRecognition.Algorithm
                 return;
             }
 
-            if ((index + (collectionCount / 2)) < Count / 2)
+            if (index + collectionCount / 2 < Count / 2)
             {
                 // Removing from first half of list
 
@@ -668,7 +669,7 @@ namespace FingerprintRecognition.Algorithm
         {
             if (IsFull)
             {
-                Capacity = (Capacity == 0) ? 1 : Capacity * 2;
+                Capacity = Capacity == 0 ? 1 : Capacity * 2;
             }
         }
 

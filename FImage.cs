@@ -2,6 +2,7 @@
 using Emgu.CV.Structure;
 using FingerprintRecognition.Filter;
 using FingerprintRecognition.MathMatrix;
+using FingerprintRecognition.MatrixConverter;
 using FingerprintRecognition.Tool;
 
 namespace FingerprintRecognition {
@@ -56,23 +57,15 @@ namespace FingerprintRecognition {
             Skeleton = Binary.Create(Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize), 100);
             Console.WriteLine("Skeletonization");
             new Skeletonization(Skeleton).Apply();
+            CvInvoke.Imwrite(DEBUG + "quick-skele.png", ToImage.FromBinaryArray(Skeleton));
             // get key points
             Console.WriteLine("Singularity");
             Singular = Singularity.Create(Skeleton, OrientImg, BlockSize, SegmentMask);
         }
 
-        public void DisplaySingularity() {
+        public void DisplaySingularity(int typ) {
             Image<Bgr, byte> res = new(Norm.Size);
-            Iterator2D.Forward(res.Height, res.Width, (y, x) => {
-                if (Singular[y, x] != -1)
-                    res[y, x] = Singularity.COLORS[Singular[y, x]];
-                else {
-                    int c = 255 * Convert.ToInt32(Skeleton[y, x]);
-                    res[y, x] = new Bgr(c, c, c);
-                }
-                return true;
-            });
-            CvInvoke.Imwrite(DEBUG + "singularity.png", res);
+            
         }
     }
 }

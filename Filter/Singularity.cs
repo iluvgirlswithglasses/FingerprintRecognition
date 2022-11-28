@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Tool;
 using static System.Math;
 
@@ -70,6 +71,67 @@ namespace FingerprintRecognition.Filter {
             if (360 - margin <= total && total <= 360 + margin)
                 return 2;
             return -1;
+        }
+
+        // 
+        static public Pair<int, int> GetCenterMost(int[,] mat, int typ) {
+            List<Pair<int, int>> res = new();
+            int[,] group = new int[mat.GetLength(0), mat.GetLength(1)];
+            int groupCnt = 1;
+
+            MatTool<int>.Forward(ref group, (y, x, v) => {
+                if (v == 0 && mat[y, x] == typ) {
+                    res.Add(BFS(mat, group, groupCnt, typ, y, x));
+                    groupCnt++;
+                }
+                return true;
+            });
+
+            Pair<int, int> center = new(mat.GetLength(0) >> 1, mat.GetLength(1) >> 1);
+            Pair<int, int> chosen = center;
+            int minDist = ~0 ^ (1 << 31);
+            foreach (var i in res) {
+                if (Distance(i, center) < minDist) {
+                    chosen = i;
+                }
+            }
+            return chosen;
+        }
+
+        /** @ tools */
+        static private Pair<int, int> BFS(int[,] mat, int[,] group, int currentGroup, int typ, int y, int x) {
+
+            Deque<Pair<int, int>> q = new();
+            Pair<double, double> res = new(0, 0);
+            int cnt = 0;
+
+            q.AddToBack(new(y, x));
+            group[y, x] = currentGroup;
+
+            while (q.Count > 0) {
+                Pair<int, int> cr = q.First();
+                q.RemoveFromFront();
+
+                cnt++;
+                res.St += cr.St;
+                res.Nd += cr.Nd;
+
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        int a = cr.St + i, b = cr.Nd + j;
+                        if (mat[a, b] == typ && group[a, b] == 0) {
+                            q.AddToBack(new Pair<int, int>(a, b));
+                            group[a, b] = currentGroup;
+                        }
+                    }
+                }
+            }
+
+            return new Pair<int, int>((int)Round(res.St / cnt), (int)Round(res.Nd / cnt));
+        }
+
+        static private int Distance(Pair<int, int> a, Pair<int, int> b) {
+            return (a.St - b.St)*(a.St - b.St) + (b.Nd - b.Nd)*(b.Nd - b.Nd);
         }
     }
 }
