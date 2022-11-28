@@ -61,9 +61,8 @@ namespace FingerprintRecognition {
             // get key points
             Console.WriteLine("Singularity");
             Singular = Singularity.Create(Skeleton, OrientImg, BlockSize, SegmentMask);
-            Singularity.KeepCenterMost(Singular, 0);
-            Singularity.KeepCenterMost(Singular, 1);
-            Singularity.KeepCenterMost(Singular, 2);
+            for (int i = 0; i < Singularity.COLORS.Length; i++)
+                Singularity.KeepCenterMost(Singular, i);
         }
 
         public void DisplaySingularity(int typ) {
