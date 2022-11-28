@@ -61,11 +61,23 @@ namespace FingerprintRecognition {
             // get key points
             Console.WriteLine("Singularity");
             Singular = Singularity.Create(Skeleton, OrientImg, BlockSize, SegmentMask);
+            Singularity.KeepCenterMost(Singular, 0);
+            Singularity.KeepCenterMost(Singular, 1);
+            Singularity.KeepCenterMost(Singular, 2);
         }
 
         public void DisplaySingularity(int typ) {
             Image<Bgr, byte> res = new(Norm.Size);
-            
+            Iterator2D.Forward(res.Height, res.Width, (y, x) => {
+                if (Singular[y, x] != -1)
+                    res[y, x] = Singularity.COLORS[Singular[y, x]];
+                else {
+                    int c = 255 * Convert.ToInt32(Skeleton[y, x]);
+                    res[y, x] = new Bgr(c, c, c);
+                }
+                return true;
+            });
+            CvInvoke.Imwrite(DEBUG + "singularity.png", res);
         }
     }
 }

@@ -74,28 +74,35 @@ namespace FingerprintRecognition.Filter {
         }
 
         // 
-        static public Pair<int, int> GetCenterMost(int[,] mat, int typ) {
-            List<Pair<int, int>> res = new();
+        static public void KeepCenterMost(int[,] mat, int typ) {
+            List<Pair<int, int>> groups = new();
             int[,] group = new int[mat.GetLength(0), mat.GetLength(1)];
             int groupCnt = 1;
 
             MatTool<int>.Forward(ref group, (y, x, v) => {
                 if (v == 0 && mat[y, x] == typ) {
-                    res.Add(BFS(mat, group, groupCnt, typ, y, x));
+                    groups.Add(BFS(mat, group, groupCnt, typ, y, x));
                     groupCnt++;
                 }
                 return true;
             });
 
             Pair<int, int> center = new(mat.GetLength(0) >> 1, mat.GetLength(1) >> 1);
-            Pair<int, int> chosen = center;
+            int chosenGroup = 0;
             int minDist = ~0 ^ (1 << 31);
-            foreach (var i in res) {
-                if (Distance(i, center) < minDist) {
-                    chosen = i;
+            for (int i = 0; i < groupCnt-1; i++) {
+                int d = Distance(groups[i], center);
+                if (d < minDist) {
+                    chosenGroup = i + 1;
+                    minDist = d;
                 }
             }
-            return chosen;
+
+            MatTool<int>.Forward(ref mat, (y, x, v) => {
+                if (v == typ && group[y, x] != chosenGroup)
+                    mat[y, x] = -1;
+                return true;
+            });
         }
 
         /** @ tools */
