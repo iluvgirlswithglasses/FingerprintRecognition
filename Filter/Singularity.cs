@@ -9,9 +9,9 @@ namespace FingerprintRecognition.Filter {
     public class Singularity {
 
         public static readonly Bgr[] COLORS = {
-            new Bgr(0, 0, 255),     // 0: loop
-            new Bgr(0, 128, 255),   // 1: delta
-            new Bgr(255, 128, 255), // 2: whorl
+            new Bgr(0, 0, 255),     // 0: whorl, red
+            new Bgr(0, 128, 255),   // 1: delta, orange
+            new Bgr(255, 128, 255), // 2: loop, pink
         };
 
         static readonly KeyValuePair<int, int>[] RELATIVE = {
@@ -19,6 +19,9 @@ namespace FingerprintRecognition.Filter {
             new(-1, -1), new(-1, +0), new(-1, +1), new(+0, +1), new(+1, +1), new(+1, +0), new(+1, -1), new(+0, -1), new(-1, -1)
         };
 
+        /**
+         * @ detects singularities
+         * */
         static public int[,] Create(bool[,] ske, double[,] orient, int w, bool[,] msk) {
             int[,] res = new int[ske.GetLength(0), ske.GetLength(1)];
             MatTool<int>.Forward(ref res, (y, x, v) => {
@@ -73,9 +76,14 @@ namespace FingerprintRecognition.Filter {
             return -1;
         }
 
-        // 
-        static public void KeepCenterMost(int[,] mat, int typ) {
+        /** 
+         * @ keeps the most significant singularities
+         * */
+        static public Pair<int, int> KeepCenterMost(int[,] mat, int typ) {
+            // 1-indexed array
             List<Pair<int, int>> groups = new();
+            groups.Add(new());
+
             int[,] group = new int[mat.GetLength(0), mat.GetLength(1)];
             int groupCnt = 1;
 
@@ -90,22 +98,25 @@ namespace FingerprintRecognition.Filter {
             Pair<int, int> center = new(mat.GetLength(0) >> 1, mat.GetLength(1) >> 1);
             int chosenGroup = 0;
             int minDist = ~0 ^ (1 << 31);
-            for (int i = 0; i < groupCnt-1; i++) {
+            for (int i = 1; i < groupCnt; i++) {
                 int d = Distance(groups[i], center);
                 if (d < minDist) {
-                    chosenGroup = i + 1;
+                    chosenGroup = i;
                     minDist = d;
                 }
             }
 
+            // remove insignificant ones
             MatTool<int>.Forward(ref mat, (y, x, v) => {
                 if (v == typ && group[y, x] != chosenGroup)
                     mat[y, x] = -1;
                 return true;
             });
+
+            // return the center of the most significant point
+            return groups[chosenGroup];
         }
 
-        /** @ tools */
         static private Pair<int, int> BFS(int[,] mat, int[,] group, int currentGroup, int typ, int y, int x) {
 
             Deque<Pair<int, int>> q = new();
@@ -137,6 +148,9 @@ namespace FingerprintRecognition.Filter {
             return new Pair<int, int>((int)Round(res.St / cnt), (int)Round(res.Nd / cnt));
         }
 
+        /** 
+         * @ tools 
+         * */
         static private int Distance(Pair<int, int> a, Pair<int, int> b) {
             return (a.St - b.St)*(a.St - b.St) + (b.Nd - b.Nd)*(b.Nd - b.Nd);
         }
