@@ -1,8 +1,7 @@
 ﻿using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Tool;
 
-namespace FingerprintRecognition.Filter
-{
+namespace FingerprintRecognition.Filter {
 
     public class Skeletonization {
         bool[,] Img;
@@ -83,6 +82,56 @@ namespace FingerprintRecognition.Filter
 
         static private int AdjMod(int i) {
             return i >= 8 ? i - 8 : i;
+        }
+
+        /** 
+         * @ remove short ridges
+         * */
+        static public void RemoveShortRidges(bool[,] ske, int threshold) {
+            int h = ske.GetLength(0), w = ske.GetLength(1);
+            bool[,] visited = new bool[h, w];
+
+            // make sure there's no going out of image
+            for (int y = 0; y < h; y++)
+                visited[y, 0] = visited[y, w - 1] = true;
+            for (int x = 0; x < w; x++)
+                visited[0, x] = visited[h - 1, x] = true;
+
+            Iterator2D.Forward(1, 1, h - 1, w - 1, (y, x) => {
+                if (ske[y, x] && !visited[y, x])
+                    RemoveShortRidgesBFS(ske, visited, y, x, threshold);
+                return true;
+            });
+        }
+
+        static private void RemoveShortRidgesBFS(bool[,] ske, bool[,] visited, int y, int x, int threshold) {
+            Deque<Pair<int, int>> q = new();
+            q.AddToBack(new(y, x));
+            visited[y, x] = true;
+
+            Deque<Pair<int, int>> history = new();
+            history.AddToBack(new(y, x));
+
+            while (q.Count > 0) {
+                Pair<int, int> cr = q.First();
+                q.RemoveFromFront();
+
+                for (int i = -1; i <= 1; i++)
+                for (int j = -1; j <= 1; j++) {
+                    int nxtY = cr.St + i, nxtX = cr.Nd + j;
+                    if (!visited[nxtY, nxtX] && ske[nxtY, nxtX]) {
+                        visited[nxtY, nxtX] = true;
+                        q.AddToBack(new(nxtY, nxtX));
+
+                        history.AddToBack(new(nxtY, nxtX));
+                    }
+                }
+            }
+
+            if (history.Count < threshold) {
+                foreach (var i in history)
+                    ske[i.St, i.Nd] = false;
+            }
         }
     }
 }

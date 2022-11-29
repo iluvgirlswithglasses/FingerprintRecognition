@@ -54,9 +54,6 @@ namespace FingerprintRecognition.Filter
                 return true;
             });
 
-            // trim the mask
-            BFSTrim(res, 5);
-
             return res;
         }
 
@@ -72,7 +69,7 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
-        static private void BFSTrim(bool[,] msk, int depth) {
+        static public void BFSTrim(bool[,] msk, int depth) {
             int h = msk.GetLength(0), w = msk.GetLength(1);
 
             Deque<Pair<int, int>> q = new();

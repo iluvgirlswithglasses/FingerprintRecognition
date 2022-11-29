@@ -45,6 +45,8 @@ namespace FingerprintRecognition.Comparator {
             // focus on the fingerprint
             Console.WriteLine("Creating Mask");
             SegmentMask = Segmentation.CreateMask(Norm, BlockSize);
+            Console.WriteLine("Trimming Mask");
+            Segmentation.BFSTrim(SegmentMask, 5);
             // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
 
             // seperates the ridges
@@ -70,6 +72,11 @@ namespace FingerprintRecognition.Comparator {
             Skeleton = Binary.Create(Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize), 100);
             Console.WriteLine("Skeletonization");
             new Skeletonization(Skeleton).Apply();
+
+            // now that all the singularities are extracted
+            // i'll keep the long ridges only
+            Console.WriteLine("Removing Skeleton's noises");
+            Skeletonization.RemoveShortRidges(Skeleton, 10);
         }
 
         public void DisplaySingularity() {
