@@ -76,7 +76,8 @@ namespace FingerprintRecognition.Comparator {
             // now that all the singularities are extracted
             // i'll keep the long ridges only
             Console.WriteLine("Removing Skeleton's noises");
-            Skeletonization.RemoveShortRidges(Skeleton, 10);
+            Skeletonization.RemoveShortRidges(Skeleton, 20);
+            CvInvoke.Imwrite(DEBUG + "skeleton.png", ToImage.FromBinaryArray(Skeleton));
         }
 
         public void DisplaySingularity() {
