@@ -86,6 +86,14 @@ namespace FingerprintRecognition.Filter {
 
         /** 
          * @ remove short ridges
+         * 
+         * note for improvements:
+         *      
+         *      instead of just removing ridges that are too short
+         *      we can remove branches of a ridge that are too short
+         *      by encoding a ridge into a tree and 
+         *      applying the solution I composed in my pb "Cirno's Company"
+         *      
          * */
         static public void RemoveShortRidges(bool[,] ske, int threshold) {
             int h = ske.GetLength(0), w = ske.GetLength(1);

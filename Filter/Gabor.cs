@@ -132,7 +132,10 @@ namespace FingerprintRecognition.Filter {
             foreach (double angle in compressed)
                 filters.Add(AffineRotation<double>.KeepSizeCreate(refFilter, angle));
 
-            // this stage might be optimized using fft
+            /** 
+             * @ note for improvement:
+             *      this stage might be optimized using FFT
+             * */
             Console.WriteLine("Entering Convolution Stage of Quick Filt Gabor...");
             //
             Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
