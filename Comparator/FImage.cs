@@ -83,18 +83,14 @@ namespace FingerprintRecognition.Comparator {
         public void DisplaySingularity() {
             Image<Bgr, byte> res = new(Norm.Size);
 
-            Iterator2D.Forward(1, 1, res.Height - 1, res.Width - 1, (y, x) =>
-            {
+            Iterator2D.Forward(1, 1, res.Height - 1, res.Width - 1, (y, x) => {
                 int adj = 0;
                 for (int i = -1; i <= 1; i++)
                     for (int j = -1; j <= 1; j++)
                         if (Singular[y + i, x + j] != -1) adj++;
-                if (4 <= adj && adj < 9)
-                {
+                if (4 <= adj && adj < 9) {
                     res[y, x] = Singularity.COLORS[Singular[y, x]];
-                }
-                else
-                {
+                } else {
                     int c = 255 * Convert.ToInt32(Skeleton[y, x]);
                     res[y, x] = new Bgr(c, c, c);
                 }

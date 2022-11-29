@@ -5,6 +5,10 @@ using FingerprintRecognition.Tool;
 
 namespace FingerprintRecognition.Comparator {
 
+    /** 
+     * this classes manages the "Singular" matrix in FImage
+     * */
+
     public class SingularityManager {
 
         int Type = -1;
