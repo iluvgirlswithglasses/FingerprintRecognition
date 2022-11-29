@@ -25,7 +25,6 @@ namespace FingerprintRecognition.Comparator {
         bool[,] Skeleton;
 
         /** @ singularity matrices */
-        int[,] Singular;
         int UsefulRadius;
         SingularityManager SingularMgr;
 
@@ -60,8 +59,8 @@ namespace FingerprintRecognition.Comparator {
 
             // get key points
             Console.WriteLine("Extracting Singularity");
-            Singular = Singularity.Create(Norm.Height, Norm.Width, OrientImg, BlockSize, SegmentMask);
-            SingularMgr = new(Singular, SegmentMask, UsefulRadius);
+            int[,] singular = Singularity.Create(Norm.Height, Norm.Width, OrientImg, BlockSize, SegmentMask);
+            SingularMgr = new(singular, SegmentMask, UsefulRadius);
 
             // get frequency
             Console.WriteLine("Frequency");
@@ -77,6 +76,7 @@ namespace FingerprintRecognition.Comparator {
             // i'll keep the long ridges only
             Console.WriteLine("Removing Skeleton's noises");
             Skeletonization.RemoveShortRidges(Skeleton, 20);
+            SingularMgr.ExtractKeysFromSkeleton(Skeleton);
             CvInvoke.Imwrite(DEBUG + "skeleton.png", ToImage.FromBinaryArray(Skeleton));
         }
 
@@ -87,9 +87,9 @@ namespace FingerprintRecognition.Comparator {
                 int adj = 0;
                 for (int i = -1; i <= 1; i++)
                     for (int j = -1; j <= 1; j++)
-                        if (Singular[y + i, x + j] != -1) adj++;
-                if (4 <= adj && adj < 9) {
-                    res[y, x] = Singularity.COLORS[Singular[y, x]];
+                        if (SingularMgr.Mat[y + i, x + j] != -1) adj++;
+                if (SingularMgr.Mat[y, x] != -1 && adj <= 8) {
+                    res[y, x] = Singularity.COLORS[SingularMgr.Mat[y, x]];
                 } else {
                     int c = 255 * Convert.ToInt32(Skeleton[y, x]);
                     res[y, x] = new Bgr(c, c, c);

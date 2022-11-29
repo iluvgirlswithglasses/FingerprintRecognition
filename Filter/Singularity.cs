@@ -8,12 +8,14 @@ namespace FingerprintRecognition.Filter {
 
     public class Singularity {
 
-        public static readonly int DELTA = 0, LOOP = 1, WHORL = 2, NOTYPE = -1;
+        public static readonly int DELTA = 0, LOOP = 1, WHORL = 2, ENDING = 3, BIFUR = 4, NOTYPE = -1;
 
         public static readonly Bgr[] COLORS = {
             new Bgr(0, 0, 255),     // 0: delta, red
             new Bgr(0, 128, 255),   // 1: loop, orange
             new Bgr(255, 128, 255), // 2: whorl, pink
+            new Bgr(255, 150, 0),   // 3: ending, cyan
+            new Bgr(0, 255, 0)      // 4: bifur, green
         };
 
         static readonly KeyValuePair<int, int>[] RELATIVE = {
@@ -179,7 +181,7 @@ namespace FingerprintRecognition.Filter {
         }
 
         /**
-         * @ 
+         * @ crop the mask around the core of the fingerprint
          * */
         static public void CropMask(bool[,] msk, Pair<int, int> center, int radius) {
             MatTool<bool>.Forward(ref msk, (i, j, v) => {
@@ -187,6 +189,56 @@ namespace FingerprintRecognition.Filter {
                     msk[i, j] = false;
                 return true;
             });
+        }
+
+        /** 
+         * @ detects endings and bifurcations
+         *   only performs on cells that aren't whorls, deltas nor loops
+         *   
+         * mat[]: the singular matrix
+         * */
+        static public List<Pair<int, int>> DetectEndings(int[,] mat, bool[,] ske) {
+            List<Pair<int, int>> res = new();
+            MatTool<int>.Forward(ref mat, 1, 1, mat.GetLength(0) - 1, mat.GetLength(1) - 1, (y, x, v) => {
+                if (mat[y, x] == -1 && ske[y, x] && GetAdj(ske, y, x) == 2) {
+                    res.Add(new(y, x));
+                }
+                return true;
+            });
+            return res;
+        }
+
+        static public List<Pair<int, int>> DetectBifurs(int[,] mat, bool[,] ske) {
+            List<Pair<int, int>> res = new();
+            MatTool<int>.Forward(ref mat, 1, 1, mat.GetLength(0) - 1, mat.GetLength(1) - 1, (y, x, v) => {
+                if (mat[y, x] == -1 && ske[y, x] && GetShift(ske, y, x) >= 3) {
+                    res.Add(new(y, x));
+                }
+                return true;
+            });
+            return res;
+        }
+
+        // returns how many time the color shifts
+        static private int GetShift(bool[,] ske, int y, int x) {
+            int shf = 0;
+            for (int i = 0; i < 8; i++)
+                if (
+                    !ske[y + RELATIVE[i].Key, x + RELATIVE[i].Value] &&
+                    ske[y + RELATIVE[i + 1].Key, x + RELATIVE[i + 1].Value]
+                ) shf++;
+            return shf;
+        }
+
+        // returns how many 1 cell there are in the 3x3 masks
+        static private int GetAdj(bool[,] ske, int y, int x) {
+            int cnt = 0;
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    if (ske[y + i, x + j]) cnt++;
+                }
+            }
+            return cnt;
         }
 
         /** 
