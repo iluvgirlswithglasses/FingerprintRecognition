@@ -200,7 +200,7 @@ namespace FingerprintRecognition.Filter {
         static public List<Pair<int, int>> DetectEndings(int[,] mat, bool[,] ske) {
             List<Pair<int, int>> res = new();
             MatTool<int>.Forward(ref mat, 1, 1, mat.GetLength(0) - 1, mat.GetLength(1) - 1, (y, x, v) => {
-                if (mat[y, x] == -1 && ske[y, x] && GetAdj(ske, y, x) == 2) {
+                if (ske[y, x] && GetAdj(ske, y, x) == 2) {
                     res.Add(new(y, x));
                 }
                 return true;
@@ -211,7 +211,7 @@ namespace FingerprintRecognition.Filter {
         static public List<Pair<int, int>> DetectBifurs(int[,] mat, bool[,] ske) {
             List<Pair<int, int>> res = new();
             MatTool<int>.Forward(ref mat, 1, 1, mat.GetLength(0) - 1, mat.GetLength(1) - 1, (y, x, v) => {
-                if (mat[y, x] == -1 && ske[y, x] && GetShift(ske, y, x) >= 3) {
+                if (ske[y, x] && GetShift(ske, y, x) >= 3) {
                     res.Add(new(y, x));
                 }
                 return true;
