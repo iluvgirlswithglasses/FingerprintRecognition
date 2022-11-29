@@ -17,5 +17,12 @@ namespace FingerprintRecognition.DataStructure {
         public override string ToString() {
             return String.Format("({0}, {1})", St, Nd);
         }
+
+        public override bool Equals(object? obj) {
+            if (obj == null || St == null || Nd == null || !this.GetType().Equals(obj.GetType()))
+                return false;
+            Pair<A, B> x = (Pair<A, B>) obj;
+            return St.Equals(x.St) && Nd.Equals(x.Nd);
+        }
     }
 }

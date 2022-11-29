@@ -3,9 +3,10 @@ using Emgu.CV.Structure;
 using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Filter;
 using FingerprintRecognition.MathMatrix;
+using FingerprintRecognition.MatrixConverter;
 using FingerprintRecognition.Tool;
 
-namespace FingerprintRecognition {
+namespace FingerprintRecognition.Comparator {
 
     internal class FImage {
 
@@ -25,9 +26,12 @@ namespace FingerprintRecognition {
 
         /** @ singularity matrices */
         int[,] Singular;
+        int UsefulRadius;
+        SingularityManager SingularMgr;
 
-        public FImage(Image<Gray, byte> img, int bs) {
+        public FImage(Image<Gray, byte> img, int bs, int usefulRad) {
             BlockSize = bs;
+            UsefulRadius = usefulRad;
             Src = new(img.Size);
             for (int y = 0; y < img.Height; y++)
                 for (int x = 0; x < img.Width; x++)
@@ -47,10 +51,15 @@ namespace FingerprintRecognition {
             Console.WriteLine("Second Normalizaion");
             Norm = Normalization.AllignAvg(Norm);
 
-            // get gradient image
+            // get ridges orient
             Console.WriteLine("Orientation");
             OrientImg = OrientMat.Create(Norm, BlockSize);
             Norm = Normalization.ExcludeBackground(Norm, SegmentMask);
+
+            // get key points
+            Console.WriteLine("Extracting Singularity");
+            Singular = Singularity.Create(Norm.Height, Norm.Width, OrientImg, BlockSize, SegmentMask);
+            SingularMgr = new(Singular, SegmentMask, UsefulRadius);
 
             // get frequency
             Console.WriteLine("Frequency");
@@ -61,27 +70,23 @@ namespace FingerprintRecognition {
             Skeleton = Binary.Create(Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize), 100);
             Console.WriteLine("Skeletonization");
             new Skeletonization(Skeleton).Apply();
-
-            // get key points
-            Console.WriteLine("Singularity");
-            Singular = Singularity.Create(Skeleton, OrientImg, BlockSize, SegmentMask);
-            for (int i = 0; i < Singularity.COLORS.Length; i++) {
-                Pair<int, int> tmp = Singularity.KeepCenterMost(Singular, i);
-                Console.WriteLine(tmp);
-            }
         }
 
         public void DisplaySingularity() {
             Image<Bgr, byte> res = new(Norm.Size);
-            
-            Iterator2D.Forward(1, 1, res.Height - 1, res.Width - 1, (y, x) => {
+
+            Iterator2D.Forward(1, 1, res.Height - 1, res.Width - 1, (y, x) =>
+            {
                 int adj = 0;
                 for (int i = -1; i <= 1; i++)
                     for (int j = -1; j <= 1; j++)
                         if (Singular[y + i, x + j] != -1) adj++;
-                if (4 <= adj && adj < 9) {
+                if (4 <= adj && adj < 9)
+                {
                     res[y, x] = Singularity.COLORS[Singular[y, x]];
-                } else {
+                }
+                else
+                {
                     int c = 255 * Convert.ToInt32(Skeleton[y, x]);
                     res[y, x] = new Bgr(c, c, c);
                 }

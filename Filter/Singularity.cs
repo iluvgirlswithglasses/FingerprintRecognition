@@ -8,10 +8,12 @@ namespace FingerprintRecognition.Filter {
 
     public class Singularity {
 
+        public static readonly int DELTA = 0, LOOP = 1, WHORL = 2, NOTYPE = -1;
+
         public static readonly Bgr[] COLORS = {
-            new Bgr(0, 0, 255),     // 0: whorl, red
-            new Bgr(0, 128, 255),   // 1: delta, orange
-            new Bgr(255, 128, 255), // 2: loop, pink
+            new Bgr(0, 0, 255),     // 0: delta, red
+            new Bgr(0, 128, 255),   // 1: loop, orange
+            new Bgr(255, 128, 255), // 2: whorl, pink
         };
 
         static readonly KeyValuePair<int, int>[] RELATIVE = {
@@ -21,9 +23,12 @@ namespace FingerprintRecognition.Filter {
 
         /**
          * @ detects singularities
+         * 
+         * height: original img height
+         * width: original img width
          * */
-        static public int[,] Create(bool[,] ske, double[,] orient, int w, bool[,] msk) {
-            int[,] res = new int[ske.GetLength(0), ske.GetLength(1)];
+        static public int[,] Create(int height, int width, double[,] orient, int w, bool[,] msk) {
+            int[,] res = new int[height, width];
             MatTool<int>.Forward(ref res, (y, x, v) => {
                 res[y, x] = -1;
                 return true;
@@ -68,22 +73,26 @@ namespace FingerprintRecognition.Filter {
 
             // COLORS[i]: the color of code `i`
             if (180 - margin <= total && total <= 180 + margin)
+                // DELTA
                 return 0;
             if (-180 - margin <= total && total <= -180 + margin)
+                // LOOP
                 return 1;
             if (360 - margin <= total && total <= 360 + margin)
+                // WHORL
                 return 2;
+            // NOTYPE
             return -1;
         }
 
         /** 
-         * @ keeps the most significant singularities
+         * @ group the singularities
+         * 
+         * mat: the singularity matrix, size: img_height * img_width
          * */
-        static public Pair<int, int> KeepCenterMost(int[,] mat, int typ) {
-            // 1-indexed array
-            List<Pair<int, int>> groups = new();
-            groups.Add(new());
+        static public List<Pair<int, int>> GroupType(int[,] mat, int typ) {
 
+            List<Pair<int, int>> groups = new();
             int[,] group = new int[mat.GetLength(0), mat.GetLength(1)];
             int groupCnt = 1;
 
@@ -95,28 +104,49 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
+            return groups;
+        }
+
+        /**
+         * @ keep the center-most group of the `typ` singularity type
+         *   while excluding the others
+         * 
+         * mat: the singularity matrix, size: img_height * img_width
+         * groups: the groups list created the GroupType() function
+         * */
+        static public Pair<int, int> KeepCenterMostGroup(int[,] mat, int typ, List<Pair<int, int>> groups) {
+            Pair<int, int> chosen = new();
+            if (groups.Count == 0)
+                return chosen;
+
             Pair<int, int> center = new(mat.GetLength(0) >> 1, mat.GetLength(1) >> 1);
-            int chosenGroup = 0;
             int minDist = ~0 ^ (1 << 31);
-            for (int i = 1; i < groupCnt; i++) {
-                int d = Distance(groups[i], center);
+
+            foreach (var i in groups) {
+                int d = Distance(i, center);
                 if (d < minDist) {
-                    chosenGroup = i;
                     minDist = d;
+                    chosen = i;
                 }
             }
 
-            // remove insignificant ones
+            int[,] keep = new int[mat.GetLength(0), mat.GetLength(1)];
+            BFS(mat, keep, 1, typ, chosen.St, chosen.Nd);
+
             MatTool<int>.Forward(ref mat, (y, x, v) => {
-                if (v == typ && group[y, x] != chosenGroup)
-                    mat[y, x] = -1;
+                if (v == typ && keep[y, x] == 0)
+                    mat[y, x] = NOTYPE;
                 return true;
             });
 
-            // return the center of the most significant point
-            return groups[chosenGroup];
+            return chosen;
         }
 
+        /** 
+         * @ perform BFS, starting from (y, x) coord
+         *   this BFS will bleed through every cell whose type matches the required one
+         *   and mark these cells in the group[] matrix
+         * */
         static private Pair<int, int> BFS(int[,] mat, int[,] group, int currentGroup, int typ, int y, int x) {
 
             Deque<Pair<int, int>> q = new();
@@ -146,6 +176,17 @@ namespace FingerprintRecognition.Filter {
             }
 
             return new Pair<int, int>((int)Round(res.St / cnt), (int)Round(res.Nd / cnt));
+        }
+
+        /**
+         * @ 
+         * */
+        static public void CropMask(bool[,] msk, Pair<int, int> center, int radius) {
+            MatTool<bool>.Forward(ref msk, (i, j, v) => {
+                if (Abs(i - center.St) > radius || Abs(j - center.Nd) > radius)
+                    msk[i, j] = false;
+                return true;
+            });
         }
 
         /** 
