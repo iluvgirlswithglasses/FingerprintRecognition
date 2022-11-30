@@ -36,7 +36,7 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
             //
-            Iterator2D.Forward(3, 3, orient.GetLength(0) - 3, orient.GetLength(1) - 3, (y, x) => {
+            Iterator2D.Forward(2, 2, orient.GetLength(0) - 2, orient.GetLength(1) - 2, (y, x) => {
                 int t = (y - 2) * w, 
                     l = (x - 2) * w, 
                     d = (y + 3) * w, 

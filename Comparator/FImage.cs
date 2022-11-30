@@ -28,9 +28,8 @@ namespace FingerprintRecognition.Comparator {
         int UsefulRadius;
         SingularityManager SingularMgr;
 
-        public FImage(Image<Gray, byte> img, int bs, int usefulRad) {
+        public FImage(Image<Gray, byte> img, int bs, double usefulRad) {
             BlockSize = bs;
-            UsefulRadius = usefulRad;
             Src = new(img.Size);
             for (int y = 0; y < img.Height; y++)
                 for (int x = 0; x < img.Width; x++)
@@ -44,8 +43,9 @@ namespace FingerprintRecognition.Comparator {
             // focus on the fingerprint
             Console.WriteLine("Creating Mask");
             SegmentMask = Segmentation.CreateMask(Norm, BlockSize);
-            Console.WriteLine("Trimming Mask");
-            Segmentation.BFSTrim(SegmentMask, 5);
+            // Console.WriteLine("Trimming Mask");
+            // Segmentation.BFSTrim(SegmentMask, 5);
+            UsefulRadius = Convert.ToInt32(usefulRad * (Segmentation.GetMaskWidth(SegmentMask) >> 1));
             // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
 
             // seperates the ridges
@@ -77,10 +77,9 @@ namespace FingerprintRecognition.Comparator {
             Console.WriteLine("Removing Skeleton's noises");
             Skeletonization.RemoveShortRidges(Skeleton, 20);
             SingularMgr.ExtractKeysFromSkeleton(Skeleton);
-            CvInvoke.Imwrite(DEBUG + "skeleton.png", ToImage.FromBinaryArray(Skeleton));
         }
 
-        public void DisplaySingularity() {
+        public void DisplaySingularity(string fname) {
             Image<Bgr, byte> res = new(Norm.Size);
 
             Iterator2D.Forward(1, 1, res.Height - 1, res.Width - 1, (y, x) => {
@@ -96,7 +95,7 @@ namespace FingerprintRecognition.Comparator {
                 }
                 return true;
             });
-            CvInvoke.Imwrite(DEBUG + "singularity.png", res);
+            CvInvoke.Imwrite(DEBUG + String.Format("{0}.png", fname), res);
         }
     }
 }

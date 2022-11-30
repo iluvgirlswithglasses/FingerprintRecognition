@@ -127,5 +127,19 @@ namespace FingerprintRecognition.Filter
                 }
             }
         }
+
+        static public int GetMaskWidth(bool[,] msk) {
+            int best = 0, cr = 0;
+            for (int y = 0; y < msk.GetLength(0); y++) {
+                for (int x = 0; x < msk.GetLength(1); x++) {
+                    if (msk[y, x])
+                        best = Max(best, ++cr);
+                    else
+                        cr = 0;
+                }
+                cr = 0;
+            }
+            return best;
+        }
     }
 }
