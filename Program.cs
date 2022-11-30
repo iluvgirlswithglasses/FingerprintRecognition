@@ -34,8 +34,8 @@ for (int i = 0; i < IM_COUNT; i++) {
             imgs[i].SingularMgr, imgs[j].SingularMgr, imgs[i].Skeleton, imgs[j].Skeleton
         );
         Console.WriteLine(
-            "Img {0} & {1}: Singularities match = {2}, angle diff = {3}, dist diff = {4}", 
-            i, j, cmp.SMatches, cmp.SAngleMismatchScore, cmp.SLenMismatchScore
+            "Img {0} & {1}: Singularities match = {2}, angle diff = {3}, dist diff = {4}, Ridges mismatches = {5}", 
+            i, j, cmp.SMatches, cmp.SAngleMismatchScore, cmp.SLenMismatchScore, cmp.RidgesMismatchScore
         );
     }
 }

@@ -7,11 +7,14 @@ namespace FingerprintRecognition.Comparator {
 
         // if all singularities matches
         public bool SMatches = false;
-        //
+        // singularities distance mismatches
         public double SLenMismatchScore = 0.0;
+        // singularities angle mismatches
         public double SAngleMismatchScore = 0.0;
 
-        public int ASCnt;   // how many singularities are there in fingerprint A
+        public double RidgesMismatchScore = 0.0;
+
+        public int ASCnt;       // how many singularities are there in fingerprint A
         public double ASLen;    // the distance between the first two singularities of A
         public double BSLen;    // the distance between the first two singularities of B
 
@@ -40,6 +43,9 @@ namespace FingerprintRecognition.Comparator {
             }
 
             // perform endings, bifurs, and ridges count comparison here
+            if (SMatches) {
+                CompareRidges(mgrA.SingularLst, mgrB.SingularLst, skeA, skeB);
+            }
         }
 
         // assert that ASCnt == BSCnt && ASCnt >= 2
@@ -68,23 +74,73 @@ namespace FingerprintRecognition.Comparator {
             return true;
         }
 
+        // assert that ASCnt == BSCnt
+        // a[i]: { the position of the `i-th` singularity, the type of that singularity }
+        private void CompareRidges(List<Pair<Pair<int, int>, int>> a, List<Pair<Pair<int, int>, int>> b, bool[,] skeA, bool[,] skeB) {
+            if (ASCnt == 1) {
+                // brute-force rotate comparison
+
+            } else {
+                for (int i = 0; i < ASCnt - 1; i++) {
+                    int aCnt = CountRidges(a[i].St, a[i + 1].St, skeA);
+                    int bCnt = CountRidges(b[i].St, b[i + 1].St, skeB);
+                    RidgesMismatchScore += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
+                }
+
+                // might enhances this somehow later
+            }
+        }
+
         /** 
          * @ shortcuts
          * */
-        private Pair<double, double> GetVector(Pair<int, int> a, Pair<int, int> b) {
+        static private Pair<double, double> GetVector(Pair<int, int> a, Pair<int, int> b) {
             return new(b.St - a.St, b.Nd - a.Nd);
         }
 
-        private Pair<double, double> GetVector(Pair<double, double> a, Pair<double, double> b) {
+        static private Pair<double, double> GetVector(Pair<double, double> a, Pair<double, double> b) {
             return new(b.St - a.St, b.Nd - a.Nd);
         }
 
-        private double CalcLen(Pair<double, double> v) {
+        static private double CalcLen(Pair<double, double> v) {
             return Sqrt(v.St * v.St + v.Nd * v.Nd);
         }
 
-        private double CalcAlpha(Pair<double, double> v) {
+        static private double CalcAlpha(Pair<double, double> v) {
             return Atan2(v.St, v.Nd);
+        }
+
+        /** 
+         * @ compare ridges' geometric calculator
+         * */
+        static public int CountRidges(Pair<int, int> st, Pair<int, int> fi, bool[,] ske) {
+            int cnt = 0;
+            bool pre = false;
+
+            Pair<double, double> v = GetVector(fi, st);
+            v = new(-v.Nd, v.St);   // {y, x}
+            double a = v.Nd, b = v.St, c = - a * st.Nd - b * st.St;
+
+            if (Abs(st.St - fi.St) > Abs(st.Nd - fi.Nd)) {
+                // y diff > x diff
+                for (int y = Min(st.St, fi.St); y <= Max(st.St, fi.St); y++) {
+                    int x = (int)Round((- b * y - c) / a);
+                    //
+                    if (ske[y, x] && !pre)
+                        cnt++;
+                    pre = ske[y, x];
+                }
+            } else {
+                // y diff <= x diff
+                for (int x = Min(st.Nd, fi.Nd); x <= Max(st.Nd, fi.Nd); x++) {
+                    int y = (int)Round((- a * x - c) / b);
+                    //
+                    if (ske[y, x] && !pre) 
+                        cnt++;
+                    pre = ske[y, x];
+                }
+            }
+            return cnt;
         }
     }
 }
