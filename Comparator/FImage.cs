@@ -17,14 +17,15 @@ namespace FingerprintRecognition.Comparator {
         public Image<Gray, byte> Src;
 
         /** @ pre-processing */
-        Image<Gray, double> Norm;
+        public Image<Gray, double> Norm;
         // Image<Gray, double> SegmentImg;
-        bool[,] SegmentMask;
-        double[,] OrientImg;
-        double[,] FrequencyImg;
-        bool[,] Skeleton;
+        public bool[,] SegmentMask;
+        public double[,] OrientImg;
+        public double[,] FrequencyImg;
+        public bool[,] Skeleton;
 
         /** @ singularity matrices */
+        Pair<int, int> Center;
         int UsefulRadius;
         SingularityManager SingularMgr;
 
@@ -45,12 +46,14 @@ namespace FingerprintRecognition.Comparator {
             SegmentMask = Segmentation.CreateMask(Norm, BlockSize);
             // Console.WriteLine("Trimming Mask");
             // Segmentation.BFSTrim(SegmentMask, 5);
-            UsefulRadius = Convert.ToInt32(usefulRad * (Segmentation.GetMaskWidth(SegmentMask) >> 1));
             // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
 
-            // seperates the ridges
-            Console.WriteLine("Second Normalizaion");
+            // crop the masks
+            Console.WriteLine("Cropping the mask");
             Norm = Normalization.AllignAvg(Norm);
+            Center = Segmentation.GetCenter(SegmentMask, Norm);
+            UsefulRadius = Convert.ToInt32(usefulRad * (Segmentation.GetMaskWidth(SegmentMask) >> 1));
+            Segmentation.CropMask(SegmentMask, Center, UsefulRadius);
 
             // get ridges orient
             Console.WriteLine("Orientation");
@@ -60,7 +63,7 @@ namespace FingerprintRecognition.Comparator {
             // get key points
             Console.WriteLine("Extracting Singularity");
             int[,] singular = Singularity.Create(Norm.Height, Norm.Width, OrientImg, BlockSize, SegmentMask);
-            SingularMgr = new(singular, SegmentMask, UsefulRadius);
+            SingularMgr = new(singular);
 
             // get frequency
             Console.WriteLine("Frequency");
@@ -95,7 +98,7 @@ namespace FingerprintRecognition.Comparator {
                 }
                 return true;
             });
-            CvInvoke.Imwrite(DEBUG + String.Format("{0}.png", fname), res);
+            CvInvoke.Imwrite(DEBUG + string.Format("singular-{0}.png", fname), res);
         }
     }
 }

@@ -13,11 +13,10 @@ namespace FingerprintRecognition.Comparator {
 
         public int Type = -1;
         public int[,] Mat;
-        public Pair<int, int> Center;  // the core coord of the fingerprint
 
         public List<Pair<int, int>> Loops, Deltas, Whorls, Endings = new(), Bifurcations = new();
 
-        public SingularityManager(int[,] singularMat, bool[,] msk, int rad) {
+        public SingularityManager(int[,] singularMat) {
             Mat = singularMat;
             // each fingerprint might either have:
             //  - ONE or TWO loop, or
@@ -28,10 +27,8 @@ namespace FingerprintRecognition.Comparator {
             //
             if (Whorls.Count > 0) {
                 Type = Singularity.WHORL;
-                Center = Whorls.First();
             } else {
                 Type = Singularity.LOOP;
-                Center = Loops.First();
             }
             // and now I can safely extracts other data
             Deltas = Singularity.GroupType(Mat, Singularity.DELTA);

@@ -4,8 +4,7 @@ using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Tool;
 using static System.Math;
 
-namespace FingerprintRecognition.Filter
-{
+namespace FingerprintRecognition.Filter {
 
     internal class Segmentation {
 
@@ -14,7 +13,7 @@ namespace FingerprintRecognition.Filter
          * 
          * src: normalized image
          * w:   kernel size
-         */
+         * */
         static public bool[,] CreateMask(Image<Gray, double> src, int w) {
             var res = new bool[src.Height, src.Width];
 
@@ -57,6 +56,40 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
+        /** 
+         * @ get the center of the mask
+         * */
+        static public Pair<int, int> GetCenter(bool[,] msk, Image<Gray, double> src) {
+            Pair<double, double> res = new();
+            double weight = 0;
+
+            MatTool<bool>.Forward(ref msk, (y, x, v) => {
+                double crW = src[y, x].Intensity;
+                if (!v || crW <= 0)
+                    return false;
+                res.St += crW * y;
+                res.Nd += crW * x;
+                weight += crW;
+                return true;
+            });
+
+            return new Pair<int, int>(
+                (int)(res.St / weight), (int)(res.Nd / weight)
+            );
+        }
+
+        /** @ */
+        static public void CropMask(bool[,] msk, Pair<int, int> center, int rad) {
+            MatTool<bool>.Forward(ref msk, (y, x, v) => {
+                if (Abs(y - center.St) > rad || Abs(x - center.Nd) > rad)
+                    msk[y, x] = false;
+                return true;
+            });
+        }
+
+        /** 
+         * @ for display only
+         * */
         static public Image<Gray, double> ApplyMask(Image<Gray, double> src, bool[,] msk) {
             var res = new Image<Gray, double>(src.Size);
 
@@ -69,6 +102,9 @@ namespace FingerprintRecognition.Filter
             return res;
         }
 
+        /** 
+         * @ mask dilation
+         * */
         static public void BFSTrim(bool[,] msk, int depth) {
             int h = msk.GetLength(0), w = msk.GetLength(1);
 
