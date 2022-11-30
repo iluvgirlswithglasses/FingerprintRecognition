@@ -95,8 +95,8 @@ namespace FingerprintRecognition.MathMatrix {
             if (peaks.Count < 2)
                 return 0.0;
             double waveLength = (double)(peaks.Last() - peaks.First()) / (peaks.Count - 1);
-            if (waveLength >= minWaveLength && waveLength <= maxWaveLength)
-                return 1 / waveLength;
+            if (minWaveLength <= waveLength && waveLength <= maxWaveLength)
+                return 1.0 / waveLength;
             return 0.0;
         }
     }
