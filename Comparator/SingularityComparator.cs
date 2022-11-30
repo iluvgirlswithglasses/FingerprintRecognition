@@ -5,14 +5,13 @@ namespace FingerprintRecognition.Comparator {
 
     public class SingularityComparator {
 
-        // if all singularities matches
-        public bool SMatches = false;
-        // singularities distance mismatches
-        public double SLenMismatchScore = 0.0;
-        // singularities angle mismatches
-        public double SAngleMismatchScore = 0.0;
+        public bool SMatches = false;   // if all singularities matches
 
-        public double RidgesMismatchScore = 0.0;
+        public double SLenMismatchScore = 0.0;      // singularities distance mismatches
+        public double SAngleMismatchScore = 0.0;    // singularities angle mismatches
+
+        public double SingulRidgesMismatchScore = 0.0;  // ridges between core singularities
+        public double RidgesMismatchScore = 0.0;        // arbitrary ridges score
 
         public int ASCnt;       // how many singularities are there in fingerprint A
         public double ASLen;    // the distance between the first two singularities of A
@@ -35,6 +34,7 @@ namespace FingerprintRecognition.Comparator {
                 return;
             }
 
+            // assert core singularities count of A and B are the same
             ASCnt = mgrA.SingularLst.Count;
             if (ASCnt == 1) {
                 SMatches = true;
@@ -55,6 +55,8 @@ namespace FingerprintRecognition.Comparator {
                 // these core points does not allign
                 if (a[i].Nd != b[i].Nd)
                     return false;
+            if (ASCnt == 1)
+                return true;
             //
             Pair<double, double> u = GetVector(a[0].St, a[1].St),
                                  v = GetVector(b[0].St, b[1].St);
@@ -62,7 +64,7 @@ namespace FingerprintRecognition.Comparator {
             BSLen = CalcLen(v);
             AngleDiff = CalcAlpha(v) - CalcAlpha(u);
             //
-            for (int i = 1; i < ASCnt - 1; i++) {
+            for (int i = 0; i < ASCnt - 1; i++) {
                 u = GetVector(a[i].St, a[i + 1].St);
                 v = GetVector(b[i].St, b[i + 1].St);
                 SLenMismatchScore += Abs(CalcLen(u) / ASLen - CalcLen(v) / BSLen);
@@ -71,6 +73,8 @@ namespace FingerprintRecognition.Comparator {
                 // = a - b + AngleDiff
                 SAngleMismatchScore += Abs(CalcAlpha(u) - CalcAlpha(v) + AngleDiff);
             }
+            SLenMismatchScore /= ASCnt - 1;
+            SAngleMismatchScore /= ASCnt - 1;
             return true;
         }
 
@@ -84,7 +88,7 @@ namespace FingerprintRecognition.Comparator {
                 for (int i = 0; i < ASCnt - 1; i++) {
                     int aCnt = CountRidges(a[i].St, a[i + 1].St, skeA);
                     int bCnt = CountRidges(b[i].St, b[i + 1].St, skeB);
-                    RidgesMismatchScore += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
+                    SingulRidgesMismatchScore += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
                 }
 
                 // might enhances this somehow later
