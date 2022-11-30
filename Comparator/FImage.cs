@@ -27,7 +27,7 @@ namespace FingerprintRecognition.Comparator {
         /** @ singularity matrices */
         Pair<int, int> Center;
         int UsefulRadius;
-        SingularityManager SingularMgr;
+        public SingularityManager SingularMgr;
 
         public FImage(Image<Gray, byte> img, int bs, double usefulRad) {
             BlockSize = bs;

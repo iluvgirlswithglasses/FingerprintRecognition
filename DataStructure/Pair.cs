@@ -15,7 +15,7 @@ namespace FingerprintRecognition.DataStructure {
         }
 
         public override string ToString() {
-            return String.Format("({0}, {1})", St, Nd);
+            return string.Format("({0}, {1})", St, Nd);
         }
 
         public override bool Equals(object? obj) {
@@ -23,6 +23,10 @@ namespace FingerprintRecognition.DataStructure {
                 return false;
             Pair<A, B> x = (Pair<A, B>) obj;
             return St.Equals(x.St) && Nd.Equals(x.Nd);
+        }
+
+        public override int GetHashCode() {
+            throw new NotImplementedException();
         }
     }
 }

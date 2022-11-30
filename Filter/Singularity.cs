@@ -91,6 +91,7 @@ namespace FingerprintRecognition.Filter {
          * @ group the singularities
          * 
          * mat: the singularity matrix, size: img_height * img_width
+         * the result is sorted in top-down, left-right priority
          * */
         static public List<Pair<int, int>> GroupType(int[,] mat, int typ) {
 
