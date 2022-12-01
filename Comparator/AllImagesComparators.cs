@@ -32,17 +32,17 @@ namespace FingerprintRecognition.Comparator {
          * sLenTolerance: singularities distance mismatches mismatch threshold
          * sAngleTolerance: singularities angle mismatches threshold
          * */
-        public void Compare(bool ss, double angleTolerance, double sLenTolerance, double sAngleTolerance, double sRidgeTolerance, double aRidgeTolerance) {
+        public void Compare(bool ss, double angleTolerance, double sLenTolerance, double sAngleTolerance, double sRidgeTolerance) {
             for (int i = St; i < Fi; i++) {
                 for (int j = i + 1; j < Fi; j++) {
                     SingularityComparator cmp = new SingularityComparator(
-                        Imgs[i].SingularMgr, Imgs[j].SingularMgr, Imgs[i].Skeleton, Imgs[j].Skeleton
+                        Imgs[i], Imgs[j]
                     );
                     Console.WriteLine(
                         "Img {0} & {1}:\nSinguls match = {2}, angle diff = {3}, dist diff = {4}, ridges mismatch score = {5}\n", 
                         i, j, cmp.SMatches, cmp.SAngleMismatchScore, cmp.SLenMismatchScore, cmp.SingulRidgesMismatchScore
                     );
-                    if (MatchTolerance(cmp, ss, angleTolerance, sLenTolerance, sAngleTolerance, sRidgeTolerance, aRidgeTolerance)) {
+                    if (MatchTolerance(cmp, ss, angleTolerance, sLenTolerance, sAngleTolerance, sRidgeTolerance)) {
                         Join(i - St, j - St);
                     }
                 }
@@ -57,14 +57,13 @@ namespace FingerprintRecognition.Comparator {
             }
         }
 
-        public bool MatchTolerance(SingularityComparator cmp, bool ss, double angleTolerance, double sLenTolerance, double sAngleTolerance, double sRidgeTolerance, double aRidgeTolerance) {
+        public bool MatchTolerance(SingularityComparator cmp, bool ss, double angleTolerance, double sLenTolerance, double sAngleTolerance, double sRidgeTolerance) {
             if (ss && !cmp.SMatches)
                 return false;
             return cmp.AngleDiff <= angleTolerance &&
                    cmp.SLenMismatchScore <= sLenTolerance && 
                    cmp.SAngleMismatchScore <= sAngleTolerance &&
-                   cmp.SingulRidgesMismatchScore <= sRidgeTolerance &&
-                   cmp.RidgesMismatchScore <= aRidgeTolerance;
+                   cmp.SingulRidgesMismatchScore <= sRidgeTolerance;
         }
 
         /** @ dsu */

@@ -25,8 +25,8 @@ namespace FingerprintRecognition.Comparator {
         public bool[,] Skeleton;
 
         /** @ singularity matrices */
-        Pair<int, int> Center;
-        int UsefulRadius;
+        public Pair<int, int> Center;
+        public int UsefulRadius;
         public SingularityManager SingularMgr;
 
         public FImage(Image<Gray, byte> img, int bs, double usefulRad) {

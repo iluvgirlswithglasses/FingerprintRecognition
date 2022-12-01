@@ -3,6 +3,8 @@ using static System.Math;
 
 namespace FingerprintRecognition.Comparator {
 
+    // note: "core singulatities" and "significant singularities" are the same
+
     public class SingularityComparator {
 
         public bool SMatches = false;   // if all singularities matches
@@ -11,7 +13,8 @@ namespace FingerprintRecognition.Comparator {
         public double SAngleMismatchScore = 0.0;    // singularities angle mismatches
 
         public double SingulRidgesMismatchScore = 0.0;  // ridges between core singularities
-        public double RidgesMismatchScore = 0.0;        // arbitrary ridges score
+        public double BifurRidgesMismatchScore = 0.0;   // mismatch score between core singularities and bifurs
+        public double EndingRidgesMismatchScore = 0.0;  // mismatch score between core singularities and endings
 
         public int ASCnt;       // how many singularities are there in fingerprint A
         public double ASLen;    // the distance between the first two singularities of A
@@ -23,8 +26,11 @@ namespace FingerprintRecognition.Comparator {
         public double AngleDiff;
 
         public SingularityComparator(
-            SingularityManager mgrA, SingularityManager mgrB, bool[,] skeA, bool[,] skeB
+            FImage a, FImage b
         ) {
+            SingularityManager mgrA = a.SingularMgr, mgrB = b.SingularMgr;
+            bool[,] skeA = a.Skeleton, skeB = b.Skeleton;
+
             if (
                 mgrA.Loops.Count != mgrB.Loops.Count || 
                 mgrA.Whorls.Count != mgrB.Whorls.Count || 
@@ -42,10 +48,8 @@ namespace FingerprintRecognition.Comparator {
                 SMatches = CompareSingularity(mgrA.SingularLst, mgrB.SingularLst);
             }
 
-            // perform endings, bifurs, and ridges count comparison here
-            if (SMatches) {
-                CompareRidges(mgrA.SingularLst, mgrB.SingularLst, skeA, skeB);
-            }
+            // ridges comparision
+            CompareRidges(mgrA, mgrB, skeA, skeB);
         }
 
         // assert that ASCnt == BSCnt && ASCnt >= 2
@@ -78,19 +82,41 @@ namespace FingerprintRecognition.Comparator {
 
         // assert that ASCnt == BSCnt
         // a[i]: { the position of the `i-th` singularity, the type of that singularity }
-        private void CompareRidges(List<Pair<Pair<int, int>, int>> a, List<Pair<Pair<int, int>, int>> b, bool[,] skeA, bool[,] skeB) {
-            if (ASCnt <= 1) {
-                // brute-force rotate comparison
-
-            } else {
+        private void CompareRidges(SingularityManager a, SingularityManager b, bool[,] skeA, bool[,] skeB) {
+            if (SMatches && ASCnt >= 2) {
                 // compare the ridges between significant singularities
                 for (int i = 0; i < ASCnt - 1; i++) {
-                    int aCnt = CountRidges(a[i].St, a[i + 1].St, skeA);
-                    int bCnt = CountRidges(b[i].St, b[i + 1].St, skeB);
+                    int aCnt = CountRidges(a.SingularLst[i].St, a.SingularLst[i + 1].St, skeA);
+                    int bCnt = CountRidges(b.SingularLst[i].St, b.SingularLst[i + 1].St, skeB);
                     SingulRidgesMismatchScore += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
                 }
+            }
 
-                // might enhances this somehow later
+            // if SMatches == 0,
+            // we assume a pair of singulartities is the same
+            // and perform comparision based on the pair
+
+            BifurRidgesMismatchScore = 1.0;
+            EndingRidgesMismatchScore = 1.0;
+
+            foreach (Pair<Pair<int, int>, int> i in a.SingularLst) {
+                foreach (Pair<Pair<int, int>, int> j in b.SingularLst) {
+                    // even the type is different
+                    // --> this can not be the same singularity
+                    if (i.Nd != j.Nd)
+                        continue;
+
+                    double crBifur = 0.0, crEnding = 0.0;
+                    Pair<int, int> aLoc = i.St, bLoc = j.St;
+
+                    // compare the ridges between significant singularities and bifurs
+
+                    // compare the ridges between significant singularities and endings
+
+                    // store the result
+                    BifurRidgesMismatchScore = Min(BifurRidgesMismatchScore, crBifur);
+                    EndingRidgesMismatchScore = Min(EndingRidgesMismatchScore, crEnding);
+                }
             }
         }
 
