@@ -86,16 +86,21 @@ namespace FingerprintRecognition.Comparator {
             Image<Bgr, byte> res = new(Norm.Size);
 
             Iterator2D.Forward(1, 1, res.Height - 1, res.Width - 1, (y, x) => {
-                int adj = 0;
-                for (int i = -1; i <= 1; i++)
-                    for (int j = -1; j <= 1; j++)
-                        if (SingularMgr.Mat[y + i, x + j] != -1) adj++;
-                if (SingularMgr.Mat[y, x] != -1 && adj <= 8) {
-                    res[y, x] = Singularity.COLORS[SingularMgr.Mat[y, x]];
-                } else {
-                    int c = 255 * Convert.ToInt32(Skeleton[y, x]);
-                    res[y, x] = new Bgr(c, c, c);
+                int typ = SingularMgr.Mat[y, x];
+                if (typ != -1) {
+                    int adj = 0;
+                    for (int i = -1; i <= 1; i++)
+                        for (int j = -1; j <= 1; j++)
+                            if (SingularMgr.Mat[y + i, x + j] == typ) adj++;
+
+                    if (adj <= 6) {
+                        res[y, x] = Singularity.COLORS[SingularMgr.Mat[y, x]];
+                        return true;
+                    }
                 }
+
+                int c = 255 * Convert.ToInt32(Skeleton[y, x]);
+                res[y, x] = new Bgr(c, c, c);
                 return true;
             });
             CvInvoke.Imwrite(DEBUG + string.Format("singular-{0}.png", fname), res);
