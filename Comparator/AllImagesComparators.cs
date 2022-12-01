@@ -17,10 +17,10 @@ namespace FingerprintRecognition.Comparator {
             Fi = fi;
             Cnt = Fi - St;
 
-            // for some reason I can't init an array with size
-            Parent = new();
+            // why does this look so freaking heretic
+            Parent = new(new int[Cnt]);
             for (int i = 0; i < Cnt; i++)
-                Parent.Add(i);
+                Parent[i] = i;
             Group = new();
         }
 
@@ -82,8 +82,9 @@ namespace FingerprintRecognition.Comparator {
          * @ printing
          * */ 
         public void PrintGroups() {
+            int groupCnt = 0;
             foreach (var g in Group) {
-                Console.Write(String.Format("{0}: ", g.Key));
+                Console.Write(String.Format("{0}: ", groupCnt++));
                 foreach (var i in g.Value)
                     Console.Write(String.Format("{0} ", i));
                 Console.WriteLine();
