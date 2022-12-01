@@ -8,7 +8,7 @@ using FingerprintRecognition.Tool;
 
 namespace FingerprintRecognition.Comparator {
 
-    internal class FImage {
+    public class FImage {
 
         const string DEBUG = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 

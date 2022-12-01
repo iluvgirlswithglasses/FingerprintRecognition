@@ -1,5 +1,4 @@
-﻿
-using Emgu.CV;
+﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Comparator;
 
@@ -13,7 +12,7 @@ const double USEFUL_RADIUS = 1.0;
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 const int IM_COUNT = 66;
-const int START = 16, END = 66;
+const int START = 11, END = 21;
 
 /** @ get files */
 FImage[] imgs = new FImage[IM_COUNT];
@@ -27,14 +26,7 @@ for (int i = START; i < END; i++) {
 }
 
 /** @ compare files */
-for (int i = START; i < END; i++) {
-    for (int j = i + 1; j < END; j++) {
-        SingularityComparator cmp = new SingularityComparator(
-            imgs[i].SingularMgr, imgs[j].SingularMgr, imgs[i].Skeleton, imgs[j].Skeleton
-        );
-        Console.WriteLine(
-            "Img {0} & {1}:\nSinguls match = {2}, angle diff = {3}, dist diff = {4}, ridges mismatch score = {5}\n", 
-            i, j, cmp.SMatches, cmp.SAngleMismatchScore, cmp.SLenMismatchScore, cmp.SingulRidgesMismatchScore
-        );
-    }
-}
+AllImagesComparators cmp = new(imgs, START, END);
+cmp.Compare(true, 0.25, 0.25, 0.25, 0.25);
+cmp.PrintGroups();
+
