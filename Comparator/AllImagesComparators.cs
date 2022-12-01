@@ -38,13 +38,15 @@ namespace FingerprintRecognition.Comparator {
                     SingularityComparator cmp = new SingularityComparator(
                         Imgs[i], Imgs[j]
                     );
-                    Console.WriteLine(
-                        "Img {0} & {1}:\nSinguls match = {2}, angle diff = {3}, dist diff = {4}, ridges mismatch score = {5}\n", 
-                        i, j, cmp.SMatches, cmp.SAngleMismatchScore, cmp.SLenMismatchScore, cmp.SingulRidgesMismatchScore
-                    );
-                    if (MatchTolerance(cmp, ss, angleTolerance, sLenTolerance, sAngleTolerance, sRidgeTolerance)) {
+                    bool accepted = MatchTolerance(cmp, ss, angleTolerance, sLenTolerance, sAngleTolerance, sRidgeTolerance);
+                    if (accepted) {
                         Join(i - St, j - St);
                     }
+
+                    Console.WriteLine(
+                        "Img {0} & {1}: {2}\nSinguls match = {3}, angle diff = {4}, s angle diff = {5}, dist diff = {5}, ridges mismatch score = {6}\n", 
+                        i, j, accepted, cmp.SMatches, cmp.AngleDiff, cmp.SAngleMismatchScore, cmp.SLenMismatchScore, cmp.SingulRidgesMismatchScore
+                    );
                 }
             }
             // group matches

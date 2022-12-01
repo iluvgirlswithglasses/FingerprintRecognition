@@ -49,7 +49,7 @@ namespace FingerprintRecognition.Comparator {
             }
 
             // ridges comparision
-            CompareRidges(mgrA, mgrB, skeA, skeB);
+            CompareRidges(mgrA, mgrB, skeA, skeB, a.UsefulRadius * 0.5);
         }
 
         // assert that ASCnt == BSCnt && ASCnt >= 2
@@ -82,7 +82,7 @@ namespace FingerprintRecognition.Comparator {
 
         // assert that ASCnt == BSCnt
         // a[i]: { the position of the `i-th` singularity, the type of that singularity }
-        private void CompareRidges(SingularityManager a, SingularityManager b, bool[,] skeA, bool[,] skeB) {
+        private void CompareRidges(SingularityManager a, SingularityManager b, bool[,] skeA, bool[,] skeB, double usefulRad) {
             if (SMatches && ASCnt >= 2) {
                 // compare the ridges between significant singularities
                 for (int i = 0; i < ASCnt - 1; i++) {
@@ -99,8 +99,11 @@ namespace FingerprintRecognition.Comparator {
             BifurRidgesMismatchScore = 1.0;
             EndingRidgesMismatchScore = 1.0;
 
-            foreach (Pair<Pair<int, int>, int> i in a.SingularLst) {
-                foreach (Pair<Pair<int, int>, int> j in b.SingularLst) {
+            for (int _i = 0; _i < a.SingularLst.Count; _i++) {
+                for (int _j = _i; _j < b.SingularLst.Count; _j++) {
+                    Pair<Pair<int, int>, int> i = a.SingularLst[_i],
+                                              j = b.SingularLst[_j];
+                    
                     // even the type is different
                     // --> this can not be the same singularity
                     if (i.Nd != j.Nd)
@@ -109,15 +112,29 @@ namespace FingerprintRecognition.Comparator {
                     double crBifur = 0.0, crEnding = 0.0;
                     Pair<int, int> aLoc = i.St, bLoc = j.St;
 
-                    // compare the ridges between significant singularities and bifurs
+                    /** @ compare the ridges between significant singularities and bifurs */
+                    // bifurs of 'A', allign around this singularies
 
-                    // compare the ridges between significant singularities and endings
+
+                    // try to rotate `B` and get the best result
+                    double limRad = 30 * PI / 180, radSpan = 8 * PI / 180;
+                    for (double rad = -limRad; rad <= limRad; rad += radSpan) {
+
+                    }
 
                     // store the result
                     BifurRidgesMismatchScore = Min(BifurRidgesMismatchScore, crBifur);
-                    EndingRidgesMismatchScore = Min(EndingRidgesMismatchScore, crEnding);
                 }
             }
+        }
+
+        private void ToRelativePos(List<Pair<double, double>> ls, double degSpan) {
+            // ls[i] = {y, x}
+            List<List<double>> res = new();
+        }
+
+        private double RotationalKeypointCompare(List<Pair<double, double>> a, List<Pair<double, double>> b) {
+            return 0.0;
         }
 
         /** 
@@ -129,6 +146,12 @@ namespace FingerprintRecognition.Comparator {
 
         static private Pair<double, double> GetVector(Pair<double, double> a, Pair<double, double> b) {
             return new(b.St - a.St, b.Nd - a.Nd);
+        }
+
+        static private Pair<double, double> RotatePoint(Pair<double, double> p, double rad) {
+            double y = p.Nd * Sin(rad) + p.St * Cos(rad);
+            double x = p.Nd * Cos(rad) - p.St * Sin(rad);
+            return new(y, x);
         }
 
         static private double CalcLen(Pair<double, double> v) {
