@@ -83,6 +83,7 @@ namespace FingerprintRecognition.Comparator {
                 // brute-force rotate comparison
 
             } else {
+                // compare the ridges between significant singularities
                 for (int i = 0; i < ASCnt - 1; i++) {
                     int aCnt = CountRidges(a[i].St, a[i + 1].St, skeA);
                     int bCnt = CountRidges(b[i].St, b[i + 1].St, skeB);

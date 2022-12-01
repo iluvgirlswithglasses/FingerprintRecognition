@@ -27,6 +27,6 @@ for (int i = START; i < END; i++) {
 
 /** @ compare files */
 AllImagesComparators cmp = new(imgs, START, END);
-cmp.Compare(true, 0.25, 0.25, 0.25, 0.25);
+cmp.Compare(true, 0.35, 0.25, 0.25, 0.25, 0.25);
 cmp.PrintGroups();
 

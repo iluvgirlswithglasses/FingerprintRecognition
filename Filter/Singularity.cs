@@ -198,10 +198,14 @@ namespace FingerprintRecognition.Filter {
          *   
          * mat[]: the singular matrix
          * */
-        static public List<Pair<int, int>> DetectEndings(int[,] mat, bool[,] ske) {
+        static public List<Pair<int, int>> DetectEndings(int[,] mat, bool[,] ske, bool[,] msk, int margin) {
+            // the endings that are at outer of the mask won't be so usefull
+            bool[,]? rmsk = msk.Clone() as bool[,];
+            Segmentation.BFSTrim(rmsk, margin + 10);
+            //
             List<Pair<int, int>> res = new();
             MatTool<int>.Forward(ref mat, 1, 1, mat.GetLength(0) - 1, mat.GetLength(1) - 1, (y, x, v) => {
-                if (ske[y, x] && GetAdj(ske, y, x) == 2) {
+                if (rmsk[y,x] && ske[y, x] && GetAdj(ske, y, x) == 2) {
                     res.Add(new(y, x));
                 }
                 return true;
