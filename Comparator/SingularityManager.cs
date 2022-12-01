@@ -21,25 +21,24 @@ namespace FingerprintRecognition.Comparator {
 
         public SingularityManager(int[,] singularMat) {
             Mat = singularMat;
+            
             // each fingerprint might either have:
             //  - ONE or TWO loop, or
             //  - ONE AND ONLY whorl
             Loops = Singularity.GroupType(Mat, Singularity.LOOP);
             Whorls = Singularity.GroupType(Mat, Singularity.WHORL);
-            //
-            if (Whorls.Count > 0) {
+            
+            if (Whorls.Count > 0)
                 Type = Singularity.WHORL;
-            } else {
+            else
                 Type = Singularity.LOOP;
-            }
+
             // and now I can safely extracts other data
             Deltas = Singularity.GroupType(Mat, Singularity.DELTA);
-            foreach (var i in Deltas)
-                SingularLst.Add(new(i, Singularity.DELTA));
-            foreach (var i in Loops)
-                SingularLst.Add(new(i, Singularity.LOOP));
-            foreach (var i in Whorls)
-                SingularLst.Add(new(i, Singularity.WHORL));
+            foreach (var i in Deltas) SingularLst.Add(new(i, Singularity.DELTA));
+            foreach (var i in Loops) SingularLst.Add(new(i, Singularity.LOOP));
+            foreach (var i in Whorls) SingularLst.Add(new(i, Singularity.WHORL));
+
             SingularLst.Sort((a, b) => {
                 Pair<int, int> x = a.St, y = b.St;
                 if (x.St == y.St) {

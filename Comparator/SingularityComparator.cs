@@ -36,7 +36,7 @@ namespace FingerprintRecognition.Comparator {
 
             // assert core singularities count of A and B are the same
             ASCnt = mgrA.SingularLst.Count;
-            if (ASCnt == 1) {
+            if (ASCnt <= 1) {
                 SMatches = true;
             } else {
                 SMatches = CompareSingularity(mgrA.SingularLst, mgrB.SingularLst);
@@ -55,8 +55,6 @@ namespace FingerprintRecognition.Comparator {
                 // these core points does not allign
                 if (a[i].Nd != b[i].Nd)
                     return false;
-            if (ASCnt == 1)
-                return true;
             //
             Pair<double, double> u = GetVector(a[0].St, a[1].St),
                                  v = GetVector(b[0].St, b[1].St);
@@ -81,7 +79,7 @@ namespace FingerprintRecognition.Comparator {
         // assert that ASCnt == BSCnt
         // a[i]: { the position of the `i-th` singularity, the type of that singularity }
         private void CompareRidges(List<Pair<Pair<int, int>, int>> a, List<Pair<Pair<int, int>, int>> b, bool[,] skeA, bool[,] skeB) {
-            if (ASCnt == 1) {
+            if (ASCnt <= 1) {
                 // brute-force rotate comparison
 
             } else {
