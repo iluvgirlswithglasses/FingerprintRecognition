@@ -51,8 +51,8 @@ namespace FingerprintRecognition.Comparator {
             });
         }
 
-        public void ExtractKeysFromSkeleton(bool[,] skele) {
-            Endings = Singularity.DetectEndings(Mat, skele);
+        public void ExtractKeysFromSkeleton(bool[,] skele, bool[,] msk, int margin) {
+            Endings = Singularity.DetectEndings(Mat, skele, msk, margin);
             Bifurcations = Singularity.DetectBifurs(Mat, skele);
             foreach (var i in Endings)
                 Mat[i.St, i.Nd] = Singularity.ENDING;

@@ -79,7 +79,8 @@ namespace FingerprintRecognition.Comparator {
             // i'll keep the long ridges only
             Console.WriteLine("Removing Skeleton's noises");
             Skeletonization.RemoveShortRidges(Skeleton, 20);
-            SingularMgr.ExtractKeysFromSkeleton(Skeleton);
+            int margin = (int) Math.Round(3.0 / Gabor.GetMedianFreq(FrequencyImg) * 0.65);
+            SingularMgr.ExtractKeysFromSkeleton(Skeleton, SegmentMask, margin);
         }
 
         public void DisplaySingularity(string fname) {
