@@ -1,42 +1,18 @@
 ﻿
 namespace FingerprintRecognition.Transform {
 
-    internal class Morphology {
-
-        /** @ shortcuts */
-        static public void Open(ref bool[,] src) {
-            src = MonoErosion(ref src);
-            src = MonoDilation(ref src);
-        }
-
-        static public void Close(ref bool[,] src) {
-            src = MonoDilation(ref src);
-            src = MonoErosion(ref src);
-        }
+    internal class Morphology<T> where T: new() {
 
         /** @ features */
-        static public bool[,] MonoDilation(ref bool[,] src) {
+        static public T[,] MonoDilation(T[,] src, T target, Func<T, T, bool> cmp) {
             int h = src.GetLength(0), w = src.GetLength(1);
-            bool[,] res = new bool[h, w];
+
+            T[,] res = src.Clone() as T[,];
 
             for (int y = 1; y < h - 1; y++)
                 for (int x = 1; x < w - 1; x++)
-                    if (src[y, x])
-                        MonoPlace(ref res, y, x, true);
-            return res;
-        }
-
-        static public bool[,] MonoErosion(ref bool[,] src) {
-            int h = src.GetLength(0), w = src.GetLength(1);
-            bool[,]? res = src.Clone() as bool[,];
-
-            if (res == null)
-                return new bool[h, w];
-
-            for (int y = 1; y < h - 1; y++)
-                for (int x = 1; x < w - 1; x++)
-                    if (!src[y, x])
-                        MonoPlace(ref res, y, x, false);
+                    if (cmp(src[y, x], target))
+                        MonoPlace(res, y, x, target);
             return res;
         }
 
@@ -54,7 +30,7 @@ namespace FingerprintRecognition.Transform {
         }
 
         /** @ tools */
-        static private void MonoPlace(ref bool[,] mat, int y, int x, bool v) {
+        static private void MonoPlace(T[,] mat, int y, int x, T v) {
             for (int i = -1; i <= 1; i++)
                 for (int j = -1; j <= 1; j++)
                     mat[y + i, x + j] = v;

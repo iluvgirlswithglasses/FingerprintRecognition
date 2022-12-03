@@ -20,6 +20,7 @@ namespace FingerprintRecognition.Comparator {
         public Image<Gray, double> Norm;
         // Image<Gray, double> SegmentImg;
         public bool[,] SegmentMask;
+        public bool[,] SubMask;
         public double[,] OrientImg;
         public double[,] FrequencyImg;
         public bool[,] Skeleton;
@@ -32,6 +33,8 @@ namespace FingerprintRecognition.Comparator {
         public FImage(Image<Gray, byte> img, int bs, double usefulRad) {
             BlockSize = bs;
             Src = new(img.Size);
+            // background is white
+            // fingerprint is black
             for (int y = 0; y < img.Height; y++)
                 for (int x = 0; x < img.Width; x++)
                     Src[y, x] = new Gray(255 - img[y, x].Intensity);
@@ -42,12 +45,19 @@ namespace FingerprintRecognition.Comparator {
             Norm = Normalization.Normalize(Src, 100.0, 100.0);
 
             // focus on the fingerprint
-            Console.WriteLine("Creating Mask");
+            Console.WriteLine("Creating Segmentation Mask");
             SegmentMask = Segmentation.CreateMask(Norm, BlockSize);
+
+            // help the mainmask
+            // to seperate different regions of the fingerprint
+            Console.WriteLine("Deciding the most significant Segment");
+            SubMask = SegmentationLyr2.Create(Src, Norm, BlockSize >> 1);
+
             // Console.WriteLine("Trimming Mask");
             // Segmentation.BFSTrim(SegmentMask, 5);
             // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
 
+            /*
             // crop the masks
             Console.WriteLine("Cropping the mask");
             Norm = Normalization.AllignAvg(Norm);
@@ -81,6 +91,7 @@ namespace FingerprintRecognition.Comparator {
             Skeletonization.RemoveShortRidges(Skeleton, 20);
             int margin = (int) Math.Round(3.0 / Gabor.GetMedianFreq(FrequencyImg) * 0.65);
             SingularMgr.ExtractKeysFromSkeleton(Skeleton, SegmentMask, margin);
+            */
         }
 
         public void DisplaySingularity(string fname) {

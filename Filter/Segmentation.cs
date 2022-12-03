@@ -2,6 +2,7 @@
 using Emgu.CV.Structure;
 using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Tool;
+using FingerprintRecognition.Transform;
 using static System.Math;
 
 namespace FingerprintRecognition.Filter {

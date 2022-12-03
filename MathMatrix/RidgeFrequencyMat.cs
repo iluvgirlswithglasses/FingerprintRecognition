@@ -78,7 +78,7 @@ namespace FingerprintRecognition.MathMatrix {
             avg /= ridgeSum.Length;
 
             // get dilation and filter out noise
-            double[] dilation = Morphology.SimpleGrayDilation(ridgeSum, ks, 1);
+            double[] dilation = Morphology<int>.SimpleGrayDilation(ridgeSum, ks, 1);
             double[] ridgeNoise = new double[dilation.Length];
             for (int x = 0; x < width; x++)
                 ridgeNoise[x] = Abs(dilation[x] - ridgeSum[x]);

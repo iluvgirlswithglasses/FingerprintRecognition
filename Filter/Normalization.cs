@@ -22,6 +22,8 @@ namespace FingerprintRecognition.Filter {
 
         static private double NormalizePixel(double m0, double v0, double px, double m, double v) {
             double coeff = Sqrt( v0 * ((px - m) * (px - m))) / v;
+            // ridges are BLACK
+            // background is WHITE
             if (px > m)
                 return m0 + coeff;
             return m0 - coeff;

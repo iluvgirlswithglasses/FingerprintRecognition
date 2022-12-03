@@ -1,6 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Comparator;
+using FingerprintRecognition.MatrixConverter;
 
 /** @ program parameters */
 const int BLOCK_SIZE = 16;
@@ -21,12 +22,13 @@ for (int i = START; i < END; i++) {
     imgs[i] = new(
         new Image<Gray, byte>(IN + string.Format("{0}.jpg", i)), BLOCK_SIZE, USEFUL_RADIUS
     );
-    imgs[i].DisplaySingularity(i.ToString());
-    Console.WriteLine();
+    CvInvoke.Imwrite(OUT + "submask2-" + i.ToString() + ".png", ToImage.FromBinaryArray(imgs[i].SubMask));
+    // imgs[i].DisplaySingularity(i.ToString());
+    // Console.WriteLine();
 }
 
 /** @ compare files */
-AllImagesComparators cmp = new(imgs, START, END);
-cmp.Compare(true, 0.35, 0.25, 0.25, 0.25);
-cmp.PrintGroups();
+// AllImagesComparators cmp = new(imgs, START, END);
+// cmp.Compare(true, 0.35, 0.25, 0.25, 0.25);
+// cmp.PrintGroups();
 
