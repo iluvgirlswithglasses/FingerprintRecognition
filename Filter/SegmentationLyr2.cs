@@ -15,30 +15,33 @@ namespace FingerprintRecognition.Filter {
 
     internal class SegmentationLyr2 {
 
-        static public bool[,] Create(Image<Gray, byte> src, Image<Gray, double> norm, int w) {
+        // returns the top and bot margin of the most significant segment
+        static public Pair<int, int> GetMargin(Image<Gray, byte> src, Image<Gray, double> norm, int w) {
             
             // 0: foreground
             // 1: background before outer BFS
             // 2: background after outer BFS
-            int[,] msk = new int[src.Height / w, src.Width / w];
+            byte[,] msk = new byte[src.Height / w, src.Width / w];
             ExtractBackground(norm, w, msk);
             OuterBFS(msk);
-            msk = Morphology<int>.MonoDilation(msk, 2, (y, x) => { return y == x; });
+            msk = Morphology<byte>.MonoDilation(msk, 2, (y, x) => { return y == x; });
 
-            bool[,] res = new bool[src.Height, src.Width];
-            MatTool<int>.Forward(ref msk, (i, j, v) => {
-                if (v == 2)
-                    MatTool<bool>.Forward(ref res, i * w, j * w, i * w + w, j * w + w, (y, x, v) => {
-                        res[y, x] = true;
-                        return true;
-                    });
-                return true;
-            });
+            List<Pair<int, int>> ls = GetThinRows(msk, w);
+            int mx = 0, t = 0, d = src.Height;
 
-            return res;
+            for (int i = 0; i < ls.Count - 1; i++) {
+                int dist = ls[i + 1].St - ls[i].Nd;
+                if (dist > (norm.Height>>1) && dist > mx) {
+                    mx = dist;
+                    t = ls[i].Nd;
+                    d = ls[i + 1].St;
+                }
+            }
+
+            return new(t, d);
         }
 
-        static private void ExtractBackground(Image<Gray, double> norm, int w, int[,] msk) {
+        static private void ExtractBackground(Image<Gray, double> norm, int w, byte[,] msk) {
 
             var threshold = 0.2 * ImgTool<double>.Std(ref norm);
 
@@ -55,14 +58,14 @@ namespace FingerprintRecognition.Filter {
             }
         }
 
-        static private void OuterBFS(int[,] msk) {
+        static private void OuterBFS(byte[,] msk) {
             Deque<Pair<int, int>> q = new();
-            MatTool<int>.FromOuterBFSSetup(ref msk, (y, x) => {
+            MatTool<byte>.FromOuterBFSSetup(ref msk, (y, x) => {
                 if (msk[y, x] == 1)
                     msk[y, x] = 2;
                 return true;
             });
-            MatTool<int>.FromOuterBFSSetup(ref msk, (y, x) => {
+            MatTool<byte>.FromOuterBFSSetup(ref msk, (y, x) => {
                 if (msk[y, x] == 1) {
                     msk[y, x] = 2;
                     q.AddToBack(new(y, x));
@@ -83,10 +86,35 @@ namespace FingerprintRecognition.Filter {
                 }
             }
             // mark anything other than outer background as "foreground"
-            MatTool<int>.Forward(ref msk, (y, x, v) => {
+            MatTool<byte>.Forward(ref msk, (y, x, v) => {
                 if (v != 2) msk[y, x] = 0;
                 return true;
             });
+        }
+
+        // res[i]: { thin row top pos, thin row down pos }
+        static private List<Pair<int, int>> GetThinRows(byte[,] msk, int w) {
+            // threshold for 40 blocks per row
+            const int threshold = 14;
+
+            List<Pair<int, int>> res = new();
+            res.Add(new(0, 0));
+            int h = msk.GetLength(0);
+
+            for (int i = 0; i < h; i+=2) {
+                int cnt = 0;
+                MatTool<byte>.Forward(ref msk, i, 0, i + 2, msk.GetLength(1), (y, x, v) => {
+                    if (v == 0) cnt++;
+                    return true;
+                });
+                if (cnt <= (threshold<<1)) {
+                    res.Add(new(i * w, i * w + w));
+                }
+            }
+
+            res.Add(new(h, h));
+
+            return res;
         }
     }
 }

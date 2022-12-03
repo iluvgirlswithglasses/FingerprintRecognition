@@ -88,6 +88,15 @@ namespace FingerprintRecognition.Filter {
             });
         }
 
+        static public void CropMask(bool[,] msk, int t, int d) {
+            for (int y = 0; y < t; y++)
+                for (int x = 0; x < msk.GetLength(1); x++)
+                    msk[y, x] = false;
+            for (int y = d; y < msk.GetLength(0); y++)
+                for (int x = 0; x < msk.GetLength(1); x++)
+                    msk[y, x] = false;
+        }
+
         /** 
          * @ for display only
          * */

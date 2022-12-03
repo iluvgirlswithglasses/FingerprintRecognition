@@ -20,7 +20,6 @@ namespace FingerprintRecognition.Comparator {
         public Image<Gray, double> Norm;
         // Image<Gray, double> SegmentImg;
         public bool[,] SegmentMask;
-        public bool[,] SubMask;
         public double[,] OrientImg;
         public double[,] FrequencyImg;
         public bool[,] Skeleton;
@@ -51,19 +50,20 @@ namespace FingerprintRecognition.Comparator {
             // help the mainmask
             // to seperate different regions of the fingerprint
             Console.WriteLine("Deciding the most significant Segment");
-            SubMask = SegmentationLyr2.Create(Src, Norm, BlockSize >> 1);
+            Pair<int, int> maskMargin = SegmentationLyr2.GetMargin(Src, Norm, BlockSize >> 1);
+            Segmentation.CropMask(SegmentMask, maskMargin.St, maskMargin.Nd);
+            Norm = Normalization.AllignAvg(Norm);
 
             // Console.WriteLine("Trimming Mask");
             // Segmentation.BFSTrim(SegmentMask, 5);
-            // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
 
             /*
             // crop the masks
             Console.WriteLine("Cropping the mask");
-            Norm = Normalization.AllignAvg(Norm);
             Center = Segmentation.GetCenter(SegmentMask, Norm);
             UsefulRadius = Convert.ToInt32(usefulRad * (Segmentation.GetMaskWidth(SegmentMask) >> 1));
             Segmentation.CropMask(SegmentMask, Center, UsefulRadius);
+            */
 
             // get ridges orient
             Console.WriteLine("Orientation");
@@ -91,7 +91,6 @@ namespace FingerprintRecognition.Comparator {
             Skeletonization.RemoveShortRidges(Skeleton, 20);
             int margin = (int) Math.Round(3.0 / Gabor.GetMedianFreq(FrequencyImg) * 0.65);
             SingularMgr.ExtractKeysFromSkeleton(Skeleton, SegmentMask, margin);
-            */
         }
 
         public void DisplaySingularity(string fname) {
