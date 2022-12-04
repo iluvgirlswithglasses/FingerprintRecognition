@@ -17,7 +17,7 @@ namespace FingerprintRecognition.Comparator {
         public List<Pair<int, int>> Loops, Deltas, Whorls, Endings = new(), Bifurcations = new();
 
         // SingularLst[i]: { the position of the `i-th` singularity, the type of that singularity }
-        public List<Pair<Pair<int, int>, int>> SingularLst = new();
+        public List<Pair<Pair<int, int>, int>> SingularLst = new(), CoreSingularLst = new();
 
         public SingularityManager(int[,] singularMat) {
             Mat = singularMat;
@@ -35,9 +35,15 @@ namespace FingerprintRecognition.Comparator {
 
             // and now I can safely extracts other data
             Deltas = Singularity.GroupType(Mat, Singularity.DELTA);
+
+            /* uncomment this for SingularityComparator
             foreach (var i in Deltas) SingularLst.Add(new(i, Singularity.DELTA));
             foreach (var i in Loops) SingularLst.Add(new(i, Singularity.LOOP));
             foreach (var i in Whorls) SingularLst.Add(new(i, Singularity.WHORL));
+            */
+            foreach (var i in Deltas) CoreSingularLst.Add(new(i, Singularity.DELTA));
+            foreach (var i in Loops) CoreSingularLst.Add(new(i, Singularity.LOOP));
+            foreach (var i in Whorls) CoreSingularLst.Add(new(i, Singularity.WHORL));
 
             SingularLst.Sort((a, b) => {
                 Pair<int, int> x = a.St, y = b.St;

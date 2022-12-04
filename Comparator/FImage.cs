@@ -18,7 +18,7 @@ namespace FingerprintRecognition.Comparator {
 
         /** @ pre-processing */
         public Image<Gray, double> Norm;
-        // Image<Gray, double> SegmentImg;
+        // public Image<Gray, double> SegmentImg;
         public bool[,] SegmentMask;
         public double[,] OrientImg;
         public double[,] FrequencyImg;
@@ -52,10 +52,12 @@ namespace FingerprintRecognition.Comparator {
             Console.WriteLine("Deciding the most significant Segment");
             Pair<int, int> maskMargin = SegmentationLyr2.GetMargin(Src, Norm, BlockSize >> 1);
             Segmentation.CropMask(SegmentMask, maskMargin.St, maskMargin.Nd);
+            // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
             Norm = Normalization.AllignAvg(Norm);
 
             // Console.WriteLine("Trimming Mask");
             // Segmentation.BFSTrim(SegmentMask, 5);
+            
 
             /*
             // crop the masks

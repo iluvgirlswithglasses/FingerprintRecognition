@@ -25,7 +25,27 @@ namespace FingerprintRecognition.Comparator {
         }
 
         /** 
-         * @ compare all fingerprints in [Fi:St)
+         * @ compare all fingerprints in [Fi:St) using BruteComparator
+         * 
+         * 
+         * */
+        public void BruteCompare(int usefulRad, int angleSpan, double distTolerance, double acceptedScore) {
+            for (int i = St; i < Fi; i++) {
+                for (int j = i + 1; j < Fi; j++) {
+                    /*int u = GetParent(i - St), v = GetParent(j - St);
+                    if (u == v) continue;*/
+
+                    BruteComparator cmp = new(Imgs[i], Imgs[j], usefulRad, angleSpan, distTolerance);
+                    Console.WriteLine(String.Format("Comparing {0} and {1}: Bifur MMScore = {2} [{3}]", i, j, cmp.BifurMismatchScore, cmp.BifurMismatchScore < acceptedScore));
+                    if (cmp.BifurMismatchScore < acceptedScore) {
+                        Join(i - St, j - St);
+                    }
+                }
+            }
+        }
+
+        /** 
+         * @ compare all fingerprints in [Fi:St) using SingularityComparator
          * 
          * ss: whether or not all significant singularities of two fingerprint must match
          * angleTolerance: the first two singularities' angle tolerance
