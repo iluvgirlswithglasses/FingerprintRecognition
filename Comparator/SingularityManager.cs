@@ -45,7 +45,25 @@ namespace FingerprintRecognition.Comparator {
             foreach (var i in Loops) CoreSingularLst.Add(new(i, Singularity.LOOP));
             foreach (var i in Whorls) CoreSingularLst.Add(new(i, Singularity.WHORL));
 
-            SingularLst.Sort((a, b) => {
+            // uncomment this for SingularityComparator
+            // SortSingularLst(SingularLst);
+        }
+
+        public void ExtractKeysFromSkeleton(bool[,] skele, bool[,] msk, int margin) {
+            Endings = Singularity.DetectEndings(Mat, skele, msk, margin);
+            Bifurcations = Singularity.DetectBifurs(Mat, skele);
+            foreach (var i in Endings) {
+                Mat[i.St, i.Nd] = Singularity.ENDING;
+                SingularLst.Add(new(i, Singularity.ENDING));
+            }
+            foreach (var i in Bifurcations) {
+                Mat[i.St, i.Nd] = Singularity.BIFUR;
+                SingularLst.Add(new(i, Singularity.BIFUR));
+            }   
+        }
+
+        public void SortSingularLst(List<Pair<Pair<int, int>, int>> ls) {
+            ls.Sort((a, b) => {
                 Pair<int, int> x = a.St, y = b.St;
                 if (x.St == y.St) {
                     if (x.Nd == y.Nd) {
@@ -55,15 +73,6 @@ namespace FingerprintRecognition.Comparator {
                 }
                 return x.St - y.St;
             });
-        }
-
-        public void ExtractKeysFromSkeleton(bool[,] skele, bool[,] msk, int margin) {
-            Endings = Singularity.DetectEndings(Mat, skele, msk, margin);
-            Bifurcations = Singularity.DetectBifurs(Mat, skele);
-            foreach (var i in Endings)
-                Mat[i.St, i.Nd] = Singularity.ENDING;
-            foreach (var i in Bifurcations)
-                Mat[i.St, i.Nd] = Singularity.BIFUR;
         }
     }
 }

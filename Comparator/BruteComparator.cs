@@ -107,7 +107,6 @@ namespace FingerprintRecognition.Comparator {
             foreach (var i in ls) {
                 if (i.Nd == t && Abs(i.St.St - c.St) <= UsefulRad && Abs(i.St.Nd - c.Nd) <= UsefulRad) {
                     res.Add(GetVector(c, i.St));
-                    Console.WriteLine("here\n");
                 }
             }
             return res;
@@ -119,7 +118,8 @@ namespace FingerprintRecognition.Comparator {
                 res.Add(i, new());
             foreach (var p in pos) {
                 double len = CalcLen(p);
-                double ang = Acos((double)(p.St + p.Nd) / len);
+                // the angle between vector (y=0, x=1) and vector p
+                double ang = Acos(p.Nd / len);
                 double deg = ang * 180 / PI;
                 if (p.Nd < 0)
                     deg = 360 - deg;
