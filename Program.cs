@@ -17,7 +17,7 @@ const double USEFUL_RADIUS = 1.0;
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 const int IM_COUNT = 66;
-const int START = 0, END = 11;
+const int START = 9, END = 11;
 
 /** @ get files */
 FImage[] imgs = new FImage[IM_COUNT];

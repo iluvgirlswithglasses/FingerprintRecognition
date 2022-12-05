@@ -27,18 +27,20 @@ namespace FingerprintRecognition.Comparator {
 
         //
         int UsefulRad;
-        int AngleSpan;
+        int AngleSpanDeg;
+        double AngleSpanRad;
         double DistTolerance;
 
         /** 
          * @ drivers 
          * */
-        public BruteComparator(FImage a, FImage b, int usefulRad, int angleSpan, double distTolerance) {
+        public BruteComparator(FImage a, FImage b, int usefulRad, int angleSpanDeg, double distTolerance) {
             A = a;
             B = b;
 
             UsefulRad = usefulRad;
-            AngleSpan = angleSpan;
+            AngleSpanDeg = angleSpanDeg;
+            AngleSpanRad = angleSpanDeg * PI / 180;
             DistTolerance = distTolerance;
 
             foreach (var i in A.SingularMgr.CoreSingularLst) {
@@ -64,7 +66,7 @@ namespace FingerprintRecognition.Comparator {
             for (double off = -offLim; off <= offLim; off += offInc) {
                 int cnt = 0;
                 double mm = 0;
-                for (double d = 0; d <= PI * 2; d += AngleSpan) {
+                for (double d = 0; d <= PI * 2; d += AngleSpanRad) {
                     // VTPT of this line:
                     // (Cos(d), -Sin(d))
                     int dist = Min(
@@ -80,7 +82,8 @@ namespace FingerprintRecognition.Comparator {
                         mm += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
                     }
                 }
-                if (cnt > 0)
+                // comparison count threshold
+                if (cnt > PI / AngleSpanRad)
                     RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
             }
         }
@@ -231,7 +234,7 @@ namespace FingerprintRecognition.Comparator {
 
         public Dictionary<int, SortedSet<double>> ToRelativePosition(List<Pair<double, double>> pos, double rad) {
             Dictionary<int, SortedSet<double>> res = new();
-            for (int i = 0; i <= 360; i += AngleSpan)
+            for (int i = 0; i <= 360; i += AngleSpanDeg)
                 res.Add(i, new());
             foreach (var p in pos) {
                 double len = CalcLen(p);
@@ -240,7 +243,7 @@ namespace FingerprintRecognition.Comparator {
                 double deg = ang * 180 / PI;
                 if (p.Nd < 0)
                     deg = 360 - deg;
-                int d = ((int)Floor(deg) / AngleSpan) * AngleSpan;
+                int d = ((int)Floor(deg) / AngleSpanDeg) * AngleSpanDeg;
                 res[d].Add(len);
             }
 
