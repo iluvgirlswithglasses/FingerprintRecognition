@@ -17,7 +17,7 @@ const double USEFUL_RADIUS = 1.0;
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 const int IM_COUNT = 66;
-const int START = 0, END = 1;
+const int START = 0, END = 11;
 
 /** @ get files */
 FImage[] imgs = new FImage[IM_COUNT];
@@ -31,21 +31,8 @@ for (int i = START; i < END; i++) {
 }
 
 /** @ compare files */
-double inc = 10 * Math.PI / 180;
-for (double ang = 0; ang < Math.PI * 2; ang += inc) {
-    Pair<int, int> c = new(240, 160);
-    double fa = Math.Cos(ang), fb = -Math.Sin(ang);
-    int dist = BruteComparator.GetDist(imgs[0].SegmentMask, c, fa, fb);
-    BruteComparator.CountRidges(c, fa, fb, dist, imgs[0].Skeleton);
-}
-for (int i = -2; i <= 2; i++) {
-    for (int j = -2; j <= 2; j++) {
-        imgs[0].Skeleton[240 + i, 160 + j] = true;
-    }
-}
-CvInvoke.Imwrite(OUT + "deb.png", ToImage.FromBinaryArray(imgs[0].Skeleton));
-// AllImagesComparators cmp = new(imgs, START, END);
+AllImagesComparators cmp = new(imgs, START, END);
 // cmp.Compare(true, 0.35, 0.25, 0.25, 0.25);
-// cmp.BruteCompare(50, 4, 10, 0.25);
+cmp.BruteCompare(50, 4, 10, 0.125);
 // cmp.PrintGroups();
 

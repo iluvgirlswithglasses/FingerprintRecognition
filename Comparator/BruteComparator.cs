@@ -1,6 +1,4 @@
 ﻿
-using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Filter;
 using static System.Math;
@@ -11,13 +9,19 @@ namespace FingerprintRecognition.Comparator {
 
         FImage A, B;
 
-        // represent the amount of information that one of the fingerprint has
-        // but the other does not
-        public double LossScore;
+        /** 
+         * @ loss core:
+         * 
+         * represent the amount of information that one of the fingerprint has
+         * but the other does not
+         * */
+
         //
         public double BifurMismatchScore = 1;
         public double EndingMismatchScore;
-        public double RidgeMismatchScore;
+        public double RidgeMismatchScore = 1;
+        //
+        public double RidgeLossScore;
         //
         public double SingularityMismatchScore;
 
@@ -51,16 +55,28 @@ namespace FingerprintRecognition.Comparator {
         /** 
          * @ compare based on ridges
          * */
-        static public void CompareRidge(Pair<int, int> a, Pair<int, int> b) {
+        public void CompareRidge(Pair<int, int> a, Pair<int, int> b) {
             // deg would not be increased by angleSpan after each iteration
-            double angLim = (double)12 / 180 * PI;
-            double angInc = (double)1 / 180 * PI;
+            double offLim = (double)12 / 180 * PI;
+            double offInc = (double)1 / 180 * PI;
 
             // rotate the second fingerprint
-            for (double ang = -angLim; ang <= angLim; ang += angInc) {
-                // the base line equation of `b`
-                // (fa, fb) = (y, x)
-                double fa = Cos(ang), fb = -Sin(ang);
+            for (double off = -offLim; off <= offLim; off += offInc) {
+                int cnt = 0;
+                double mm = 0;
+                for (double d = 0; d <= PI * 2; d += AngleSpan) {
+                    // VTPT of this line:
+                    // (Cos(d), -Sin(d))
+                    int dist = Min(
+                        GetDist(A.SegmentMask, a, Cos(d), -Sin(d)),
+                        GetDist(B.SegmentMask, b, Cos(d + off), -Sin(d + off))
+                    );
+                    int aCnt = CountRidges(A.Skeleton, a, Cos(d), -Sin(d), dist);
+                    int bCnt = CountRidges(B.Skeleton, b, Cos(d + off), -Sin(d + off), dist);
+                    cnt++;
+                    mm += (double) Abs(aCnt - bCnt) / Max(aCnt, bCnt);
+                }
+                RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
             }
         }
 
@@ -102,7 +118,7 @@ namespace FingerprintRecognition.Comparator {
 
         // count the number of ridges in the line:
         //      ay + bx
-        static public int CountRidges(Pair<int, int> src, double a, double b, int dist, bool[,] ske) {
+        static public int CountRidges(bool[,] ske, Pair<int, int> src, double a, double b, int dist) {
             int cnt = 0;
             bool pre = false;
 
@@ -221,8 +237,6 @@ namespace FingerprintRecognition.Comparator {
                     deg = 360 - deg;
                 int d = ((int)Floor(deg) / AngleSpan) * AngleSpan;
                 res[d].Add(len);
-
-                Console.WriteLine(String.Format("{0} - {1}", p, d));
             }
 
             return res;

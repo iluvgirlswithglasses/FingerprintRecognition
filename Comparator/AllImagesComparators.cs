@@ -36,8 +36,8 @@ namespace FingerprintRecognition.Comparator {
                     if (u == v) continue;*/
 
                     BruteComparator cmp = new(Imgs[i], Imgs[j], usefulRad, angleSpan, distTolerance);
-                    Console.WriteLine(String.Format("Comparing {0} and {1}: Bifur MMScore = {2} [{3}]", i, j, cmp.BifurMismatchScore, cmp.BifurMismatchScore < acceptedScore));
-                    if (cmp.BifurMismatchScore < acceptedScore) {
+                    Console.WriteLine(String.Format("Comparing {0} and {1}: Ridge MMScore = {2} [{3}]", i, j, cmp.RidgeMismatchScore, cmp.RidgeMismatchScore < acceptedScore));
+                    if (cmp.RidgeMismatchScore < acceptedScore) {
                         Join(i - St, j - St);
                     }
                 }
