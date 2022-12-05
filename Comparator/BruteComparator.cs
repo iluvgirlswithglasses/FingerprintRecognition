@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
 using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Filter;
 using static System.Math;
@@ -66,30 +68,36 @@ namespace FingerprintRecognition.Comparator {
 
         // calc the distance between src and the mask
         static public int GetDist(bool[,] msk, Pair<int, int> src, double a, double b) {
-            int cnt = 0;
+            int dist = 0; 
             double c = - a*src.St - b*src.Nd;
-            if (Abs(a) > Abs(b)) {
+
+            if (Abs(b) > Abs(a)) {
+                // Sin(alpha) > Cos(alpha)
+                // --> y diff > x diff
                 int yInc = 1;
                 if (b > 0)  // b = -Sin(alpha)
                     yInc = -1;
                 for (int y = src.St; 0 <= y && y < msk.GetLength(0); y += yInc) {
-                    int x = (int)Round((-b * y + c) / a);
-                    if (!msk[y, x])
+                    int x = (int)Round((-a * y - c) / b);
+                    if (x < 0 || msk.GetLength(1) <= x || !msk[y, x])
                         break;
-                    cnt++;
+                    dist++;
                 }
-            } else {
+            }
+            else {
+                // y diff <= x diff
                 int xInc = 1;
                 if (a < 0)  // a = Cos(alpha)
                     xInc = -1;
                 for (int x = src.Nd; 0 <= x && x < msk.GetLength(1); x += xInc) {
-                    int y = (int)Round((-a * x + c) / b);
-                    if (!msk[y, x])
+                    int y = (int)Round((-b * x - c) / a);
+                    if (y < 0 || msk.GetLength(0) <= y || !msk[y, x])
                         break;
-                    cnt++;
+                    dist++;
                 }
             }
-            return cnt;
+
+            return dist;
         }
 
         // count the number of ridges in the line:
