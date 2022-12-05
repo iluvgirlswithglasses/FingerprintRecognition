@@ -32,10 +32,11 @@ namespace FingerprintRecognition.Comparator {
         public void BruteCompare(int usefulRad, int angleSpan, double distTolerance, double acceptedScore) {
             for (int i = St; i < Fi; i++) {
                 for (int j = i + 1; j < Fi; j++) {
-                    /*int u = GetParent(i - St), v = GetParent(j - St);
-                    if (u == v) continue;*/
+                    int u = GetParent(i - St), v = GetParent(j - St);
 
-                    BruteComparator cmp = new(Imgs[i], Imgs[j], usefulRad, angleSpan, distTolerance);
+                    if (v != j - St) continue;  // j already has a group
+
+                    BruteComparator cmp = new(Imgs[u + St], Imgs[j], usefulRad, angleSpan, distTolerance);
                     Console.WriteLine(String.Format("Comparing {0} and {1}: Ridge MMScore = {2} [{3}]", i, j, cmp.RidgeMismatchScore, cmp.RidgeMismatchScore <= acceptedScore));
                     if (cmp.RidgeMismatchScore <= acceptedScore) {
                         Join(i - St, j - St);
@@ -68,14 +69,6 @@ namespace FingerprintRecognition.Comparator {
                         i, j, accepted, cmp.SMatches, cmp.AngleDiff, cmp.SAngleMismatchScore, cmp.SLenMismatchScore, cmp.SingulRidgesMismatchScore
                     );
                 }
-            }
-            // group matches
-            for (int i = 0; i < Cnt; i++) {
-                int g = GetParent(i);
-                if (Group.ContainsKey(g))
-                    Group[g].Add(i + St);
-                else
-                    Group[g] = new() { i + St };
             }
         }
 
@@ -111,6 +104,17 @@ namespace FingerprintRecognition.Comparator {
         /** 
          * @ printing
          * */ 
+        public void MakeGroup() {
+            // group matches
+            for (int i = 0; i < Cnt; i++) {
+                int g = GetParent(i);
+                if (Group.ContainsKey(g))
+                    Group[g].Add(i + St);
+                else
+                    Group[g] = new() { i + St };
+            }
+        }
+
         public void PrintGroups() {
             int groupCnt = 0;
             foreach (var g in Group) {

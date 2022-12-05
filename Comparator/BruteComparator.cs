@@ -75,6 +75,9 @@ namespace FingerprintRecognition.Comparator {
                     );
                     dist = Convert.ToInt32(0.8 * dist);
 
+                    if (dist < 32)
+                        continue;
+
                     int aCnt = CountRidges(A.Skeleton, a, Cos(d), -Sin(d), dist);
                     int bCnt = CountRidges(B.Skeleton, b, Cos(d + off), -Sin(d + off), dist);
                     cnt++;
@@ -83,7 +86,8 @@ namespace FingerprintRecognition.Comparator {
                     }
                 }
                 // comparison count threshold
-                RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
+                if (cnt > PI / AngleSpanRad)
+                    RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
             }
         }
 
