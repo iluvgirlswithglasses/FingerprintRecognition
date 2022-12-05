@@ -25,9 +25,7 @@ namespace FingerprintRecognition.Comparator {
         double DistTolerance;
 
         /** 
-         * @ drivers
-         * 
-         * 
+         * @ drivers 
          * */
         public BruteComparator(FImage a, FImage b, int usefulRad, int angleSpan, double distTolerance) {
             A = a;
@@ -39,15 +37,105 @@ namespace FingerprintRecognition.Comparator {
 
             foreach (var i in A.SingularMgr.CoreSingularLst) {
                 foreach (var j in B.SingularMgr.CoreSingularLst) {
-
                     // if these are of the same kind
                     if (i.Nd == j.Nd) {
                         CompareCorepoint(i.St, j.St);
+                        CompareRidge(i.St, j.St);
                     }
                 }
             }
         }
 
+        /** 
+         * @ compare based on ridges
+         * */
+        static public void CompareRidge(Pair<int, int> a, Pair<int, int> b) {
+            // deg would not be increased by angleSpan after each iteration
+            double angLim = (double)12 / 180 * PI;
+            double angInc = (double)1 / 180 * PI;
+
+            // rotate the second fingerprint
+            for (double ang = -angLim; ang <= angLim; ang += angInc) {
+                // the base line equation of `b`
+                // (fa, fb) = (y, x)
+                double fa = Cos(ang), fb = -Sin(ang);
+            }
+        }
+
+
+
+        // calc the distance between src and the mask
+        static public int GetDist(bool[,] msk, Pair<int, int> src, double a, double b) {
+            int cnt = 0;
+            double c = - a*src.St - b*src.Nd;
+            if (Abs(a) > Abs(b)) {
+                int yInc = 1;
+                if (b > 0)  // b = -Sin(alpha)
+                    yInc = -1;
+                for (int y = src.St; 0 <= y && y < msk.GetLength(0); y += yInc) {
+                    int x = (int)Round((-b * y + c) / a);
+                    if (!msk[y, x])
+                        break;
+                    cnt++;
+                }
+            } else {
+                int xInc = 1;
+                if (a < 0)  // a = Cos(alpha)
+                    xInc = -1;
+                for (int x = src.Nd; 0 <= x && x < msk.GetLength(1); x += xInc) {
+                    int y = (int)Round((-a * x + c) / b);
+                    if (!msk[y, x])
+                        break;
+                    cnt++;
+                }
+            }
+            return cnt;
+        }
+
+        // count the number of ridges in the line:
+        //      ay + bx
+        static public int CountRidges(Pair<int, int> src, double a, double b, int dist, bool[,] ske) {
+            int cnt = 0;
+            bool pre = false;
+
+            double c = - a*src.St - b*src.Nd;
+
+            if (Abs(b) > Abs(a)) {
+                // Sin(alpha) > Cos(alpha)
+                // --> y diff > x diff
+                int yInc = 1;
+                if (b > 0)  // b = -Sin(alpha)
+                    yInc = -1;
+                for (int y = src.St; 0 <= y && y < ske.GetLength(0) && Abs(y - src.St) <= dist; y += yInc) {
+                    int x = (int)Round((-a * y - c) / b);
+                    if (x < 0 || ske.GetLength(1) <= x)
+                        break;
+                    //
+                    if (ske[y, x] && !pre)
+                        cnt++;
+                    pre = ske[y, x];
+                }
+            } else {
+                // y diff <= x diff
+                int xInc = 1;
+                if (a < 0)  // a = Cos(alpha)
+                    xInc = -1;
+                for (int x = src.Nd; 0 <= x && x < ske.GetLength(1) && Abs(x - src.Nd) <= dist; x += xInc) {
+                    int y = (int)Round((-b * x - c) / a);
+                    if (y < 0 || ske.GetLength(1) <= y)
+                        break;
+                    //
+                    if (ske[y, x] && !pre)
+                        cnt++;
+                    pre = ske[y, x];
+                }
+            }
+            return cnt;
+        }
+
+        /** 
+         * @ compare based on singularities 
+         * */
         // every point within angleSpan (measured in degree)
         // is consider to be in a straight line
         private void CompareCorepoint(Pair<int, int> a, Pair<int, int> b) {
@@ -125,6 +213,8 @@ namespace FingerprintRecognition.Comparator {
                     deg = 360 - deg;
                 int d = ((int)Floor(deg) / AngleSpan) * AngleSpan;
                 res[d].Add(len);
+
+                Console.WriteLine(String.Format("{0} - {1}", p, d));
             }
 
             return res;
