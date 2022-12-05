@@ -77,14 +77,13 @@ namespace FingerprintRecognition.Comparator {
 
                     int aCnt = CountRidges(A.Skeleton, a, Cos(d), -Sin(d), dist);
                     int bCnt = CountRidges(B.Skeleton, b, Cos(d + off), -Sin(d + off), dist);
+                    cnt++;
                     if (Max(aCnt, bCnt) > 0) {
-                        cnt++;
                         mm += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
                     }
                 }
                 // comparison count threshold
-                if (cnt > PI / AngleSpanRad)
-                    RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
+                RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
             }
         }
 

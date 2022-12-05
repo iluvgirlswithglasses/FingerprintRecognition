@@ -17,7 +17,7 @@ const double USEFUL_RADIUS = 1.0;
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 const int IM_COUNT = 66;
-const int START = 9, END = 11;
+const int START = 0, END = 11;
 
 /** @ get files */
 FImage[] imgs = new FImage[IM_COUNT];
@@ -33,6 +33,6 @@ for (int i = START; i < END; i++) {
 /** @ compare files */
 AllImagesComparators cmp = new(imgs, START, END);
 // cmp.Compare(true, 0.35, 0.25, 0.25, 0.25);
-cmp.BruteCompare(50, 4, 10, 0.025);
+cmp.BruteCompare(50, 4, 10, 0.08);
 // cmp.PrintGroups();
 
