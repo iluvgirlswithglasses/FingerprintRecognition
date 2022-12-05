@@ -33,6 +33,6 @@ for (int i = START; i < END; i++) {
 /** @ compare files */
 AllImagesComparators cmp = new(imgs, START, END);
 // cmp.Compare(true, 0.35, 0.25, 0.25, 0.25);
-cmp.BruteCompare(50, 4, 10, 0.125);
+cmp.BruteCompare(50, 4, 10, 0.025);
 // cmp.PrintGroups();
 

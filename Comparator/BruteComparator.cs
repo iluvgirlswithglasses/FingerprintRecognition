@@ -71,12 +71,17 @@ namespace FingerprintRecognition.Comparator {
                         GetDist(A.SegmentMask, a, Cos(d), -Sin(d)),
                         GetDist(B.SegmentMask, b, Cos(d + off), -Sin(d + off))
                     );
+                    dist = Convert.ToInt32(0.8 * dist);
+
                     int aCnt = CountRidges(A.Skeleton, a, Cos(d), -Sin(d), dist);
                     int bCnt = CountRidges(B.Skeleton, b, Cos(d + off), -Sin(d + off), dist);
-                    cnt++;
-                    mm += (double) Abs(aCnt - bCnt) / Max(aCnt, bCnt);
+                    if (Max(aCnt, bCnt) > 0) {
+                        cnt++;
+                        mm += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
+                    }
                 }
-                RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
+                if (cnt > 0)
+                    RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
             }
         }
 
