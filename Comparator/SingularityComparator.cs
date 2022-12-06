@@ -3,7 +3,7 @@ using static System.Math;
 
 namespace FingerprintRecognition.Comparator {
 
-    // note: "core singulatities" and "significant singularities" are the same
+    /***/
 
     public class SingularityComparator {
 

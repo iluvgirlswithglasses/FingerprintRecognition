@@ -22,6 +22,9 @@ namespace FingerprintRecognition.Comparator {
         public double RidgeMismatchScore = 1;
         public double SingularityMismatchScore = 1;
 
+        public Pair<int, int> TmpCenterA = new();
+        public Pair<int, int> TmpCenterB = new();
+
         //
         int UsefulRad;
         int AngleSpanDeg;
@@ -42,21 +45,33 @@ namespace FingerprintRecognition.Comparator {
 
             // assume that a pair of core sigularity is the same
             // proceed comparison 
-            foreach (var i in A.SingularMgr.CoreSingularLst)
-                foreach (var j in B.SingularMgr.CoreSingularLst)
+            foreach (var i in A.SingularMgr.CoreSingularLst) {
+                foreach (var j in B.SingularMgr.CoreSingularLst) {
                     // if these are of the same kind
-                    if (i.Nd == j.Nd)
-                        CompareRidge(i.St, j.St);
+                    if (i.Nd == j.Nd) {
+                        Compare(i.St, j.St);
+                    }
+                }
+            }
 
             // in worse case, where the given fingerprint has no viable core singularity
             // proceed to compare two center
-            CompareRidge(A.ColorCenter, B.ColorCenter);
+            Compare(A.ColorCenter, B.ColorCenter);
+        }
+
+        public double CalcScore() {
+            return CalcScore(RidgeMismatchScore, SingularityMismatchScore);
+        }
+
+        private double CalcScore(double ridge, double singu) {
+            return 0.6 * ridge + 0.4 * singu;
         }
 
         /** 
          * @ compare based on ridges
          * */
-        public void CompareRidge(Pair<int, int> a, Pair<int, int> b) {
+        public void Compare(Pair<int, int> a, Pair<int, int> b) {
+
             // deg would not be increased by angleSpan after each iteration
             double offLim = (double)12 / 180 * PI;
             double offInc = (double)1 / 180 * PI;
@@ -65,12 +80,25 @@ namespace FingerprintRecognition.Comparator {
             for (double off = -offLim; off <= offLim; off += offInc) {
                 int ridgeComparisonCnt = 0;
                 double ridgeMismatch = 0;
+                // 360deg ridge compare
                 for (double d = 0; d <= PI * 2; d += AngleSpanRad) {
                     CompareRidge(a, b, d, off, ref ridgeComparisonCnt, ref ridgeMismatch);
                 }
                 // comparison count threshold
-                if (ridgeComparisonCnt > PI / AngleSpanRad)
-                    RidgeMismatchScore = Min(RidgeMismatchScore, ridgeMismatch / ridgeComparisonCnt);
+                if (ridgeComparisonCnt > PI / AngleSpanRad) {
+                    double rmm = ridgeMismatch / ridgeComparisonCnt;
+                    // there's a sufficient amount of ridge
+                    // --> proceed to compare relative singularities
+
+                    // whether to use this new result or not
+                    if (CalcScore(rmm, 1) < CalcScore()) {
+                        RidgeMismatchScore = rmm;
+                        SingularityMismatchScore = 1;
+
+                        TmpCenterA = a;
+                        TmpCenterB = b;
+                    }
+                }
             }
         }
 
@@ -171,36 +199,6 @@ namespace FingerprintRecognition.Comparator {
         /** 
          * @ compare based on singularities 
          * */
-        // every point within angleSpan (measured in degree)
-        // is consider to be in a straight line
-        private void CompareCorepoint(Pair<int, int> a, Pair<int, int> b) {
-            var aBifur = ToRelativePosition(
-                ExtractType(A.SingularMgr.SingularLst, Singularity.BIFUR, a), 0
-            );
-            var aEnding = ToRelativePosition(
-                ExtractType(A.SingularMgr.SingularLst, Singularity.ENDING, a), 0
-            );
-
-            var bBifurAbs = ExtractType(B.SingularMgr.SingularLst, Singularity.BIFUR, b);
-            var bEndingAbs = ExtractType(B.SingularMgr.SingularLst, Singularity.ENDING, b);
-
-            // deg would not be increased by angleSpan after each iteration
-            double angLim = (double) 12 / 180 * PI;
-            double angInc = (double) 1 / 180 * PI;
-
-            // rotate the second fingerprint
-            for (double ang = -angLim; ang <= angLim; ang += angInc) {
-                var bBifur = ToRelativePosition(bBifurAbs, ang);
-                var bEnding = ToRelativePosition(bEndingAbs, ang);
-
-                // check out how this rotation works
-                int bifurCnt = 0, bifurMismatch = 0;
-                ComparePointSet(aBifur, bBifur, ref bifurCnt, ref bifurMismatch);
-                if (bifurCnt > 0)
-                    BifurMismatchScore = Min(BifurMismatchScore, (double)bifurMismatch / bifurCnt);
-            }
-        }
-
         private void ComparePointSet(Dictionary<int, SortedSet<double>> a, Dictionary<int, SortedSet<double>> b, ref int cnt, ref int mmscore) {
             foreach (var i in a.Keys) {
                 foreach (double u in a[i]) {
@@ -222,9 +220,6 @@ namespace FingerprintRecognition.Comparator {
             }
         }
 
-        /** 
-         * @ tools
-         * */
         public List<Pair<double, double>> ExtractType(List<Pair<Pair<int, int>, int>> ls, int t, Pair<int, int> c) {
             List<Pair<double, double>> res = new();
             foreach (var i in ls) {
@@ -240,6 +235,8 @@ namespace FingerprintRecognition.Comparator {
             for (int i = 0; i <= 360; i += AngleSpanDeg)
                 res.Add(i, new());
             foreach (var p in pos) {
+                if (p.St == 0 && p.Nd == 0)
+                    continue;
                 double len = CalcLen(p);
                 // the angle between vector (y=0, x=1) and vector p
                 double ang = Acos(p.Nd / len);
