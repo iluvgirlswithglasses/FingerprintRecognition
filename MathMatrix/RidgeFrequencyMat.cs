@@ -20,6 +20,13 @@ namespace FingerprintRecognition.MathMatrix {
             double[,] freq = new double[norm.Height, norm.Width];
 
             Iterator2D.Forward(orient.GetLength(0), orient.GetLength(1), (y, x) => {
+                int inMsk = 0;
+                MatTool<bool>.Forward(ref msk, y * bs, x * bs, y * bs + bs, x * bs + bs, (r, c, _v) => {
+                    if (msk[r, c]) inMsk++;
+                    return true;
+                });
+                if (inMsk < bs * bs) return true;
+
                 double angle = orient[y, x];
                 if (angle != 0) {
                     double val = Query(

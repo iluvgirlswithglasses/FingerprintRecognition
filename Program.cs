@@ -18,7 +18,7 @@ const double ACCEPTED_MISMATCH = 0.095;
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 const int IM_COUNT = 66;
-const int START = 0, END = 7;
+const int START = 11, END = 66;
 
 /** @ get files */
 FImage[] imgs = new FImage[IM_COUNT];
