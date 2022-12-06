@@ -60,7 +60,7 @@ namespace FingerprintRecognition.Filter {
         /** 
          * @ get the center of the mask
          * */
-        static public Pair<int, int> GetCenter(bool[,] msk, Image<Gray, double> src) {
+        static public Pair<int, int> GetColorCenter(bool[,] msk, Image<Gray, double> src) {
             Pair<double, double> res = new();
             double weight = 0;
 

@@ -25,7 +25,7 @@ namespace FingerprintRecognition.Comparator {
         public bool[,] Skeleton;
 
         /** @ singularity matrices */
-        public Pair<int, int> Center;
+        public Pair<int, int> ColorCenter;
         public int UsefulRadius;
         public SingularityManager SingularMgr;
 
@@ -54,15 +54,15 @@ namespace FingerprintRecognition.Comparator {
             Segmentation.CropMask(SegmentMask, maskMargin.St, maskMargin.Nd);
             // SegmentImg = Segmentation.ApplyMask(Norm, SegmentMask);
             Norm = Normalization.AllignAvg(Norm);
+            ColorCenter = Segmentation.GetColorCenter(SegmentMask, Norm);
 
             // Console.WriteLine("Trimming Mask");
             // Segmentation.BFSTrim(SegmentMask, 5);
-            
+
 
             /*
             // crop the masks
             Console.WriteLine("Cropping the mask");
-            Center = Segmentation.GetCenter(SegmentMask, Norm);
             UsefulRadius = Convert.ToInt32(usefulRad * (Segmentation.GetMaskWidth(SegmentMask) >> 1));
             Segmentation.CropMask(SegmentMask, Center, UsefulRadius);
             */
