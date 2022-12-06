@@ -47,54 +47,55 @@ namespace FingerprintRecognition.Comparator {
                 foreach (var j in B.SingularMgr.CoreSingularLst) {
                     // if these are of the same kind
                     if (i.Nd == j.Nd) {
-                        CompareCorepoint(i.St, j.St);
-                        CompareRidge(i.St, j.St);
+                        Compare(i.St, j.St);
                     }
                 }
             }
         }
 
-        /** 
-         * @ compare based on ridges
-         * */
-        public void CompareRidge(Pair<int, int> a, Pair<int, int> b) {
+        public void Compare(Pair<int, int> a, Pair<int, int> b) {
             // deg would not be increased by angleSpan after each iteration
             double offLim = (double)12 / 180 * PI;
             double offInc = (double)1 / 180 * PI;
 
             // rotate the second fingerprint
             for (double off = -offLim; off <= offLim; off += offInc) {
-                int cnt = 0;
-                double mm = 0;
+                int ridgeComparisonCnt = 0;
+                double ridgeMismatch = 0;
                 for (double d = 0; d <= PI * 2; d += AngleSpanRad) {
-                    // VTPT of this line:
-                    // (Cos(d), -Sin(d))
-                    int dist = Min(
-                        GetDist(A.SegmentMask, a, Cos(d), -Sin(d)),
-                        GetDist(B.SegmentMask, b, Cos(d + off), -Sin(d + off))
-                    );
-                    dist = Convert.ToInt32(0.8 * dist);
-
-                    if (dist < 32)
-                        continue;
-
-                    int aCnt = CountRidges(A.Skeleton, a, Cos(d), -Sin(d), dist);
-                    int bCnt = CountRidges(B.Skeleton, b, Cos(d + off), -Sin(d + off), dist);
-                    cnt++;
-                    if (Max(aCnt, bCnt) > 0) {
-                        mm += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
-                    }
+                    CompareRidge(a, b, d, off, ref ridgeComparisonCnt, ref ridgeMismatch);
                 }
                 // comparison count threshold
-                if (cnt > PI / AngleSpanRad)
-                    RidgeMismatchScore = Min(RidgeMismatchScore, mm / cnt);
+                if (ridgeComparisonCnt > PI / AngleSpanRad)
+                    RidgeMismatchScore = Min(RidgeMismatchScore, ridgeMismatch / ridgeComparisonCnt);
             }
         }
 
+        /** 
+         * @ compare based on ridges
+         * */
+        public void CompareRidge(Pair<int, int> a, Pair<int, int> b, double d, double off, ref int cnt, ref double mm) {
+            // VTPT of this line:
+            // (Cos(d), -Sin(d))
+            int dist = Min(
+                GetDist(A.SegmentMask, a, Cos(d), -Sin(d)),
+                GetDist(B.SegmentMask, b, Cos(d + off), -Sin(d + off))
+            );
+            dist = Convert.ToInt32(0.8 * dist);
 
+            // the distance is too insignificant to extract reliable information
+            if (dist < 30) return;
+
+            int aCnt = CountRidges(A.Skeleton, a, Cos(d), -Sin(d), dist);
+            int bCnt = CountRidges(B.Skeleton, b, Cos(d + off), -Sin(d + off), dist);
+            cnt++;
+            if (Max(aCnt, bCnt) > 0) {
+                mm += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
+            }
+        }
 
         // calc the distance between src and the mask
-        static public int GetDist(bool[,] msk, Pair<int, int> src, double a, double b) {
+        static private int GetDist(bool[,] msk, Pair<int, int> src, double a, double b) {
             int dist = 0; 
             double c = - a*src.St - b*src.Nd;
 
@@ -129,7 +130,7 @@ namespace FingerprintRecognition.Comparator {
 
         // count the number of ridges in the line:
         //      ay + bx
-        static public int CountRidges(bool[,] ske, Pair<int, int> src, double a, double b, int dist) {
+        static private int CountRidges(bool[,] ske, Pair<int, int> src, double a, double b, int dist) {
             int cnt = 0;
             bool pre = false;
 
@@ -170,6 +171,8 @@ namespace FingerprintRecognition.Comparator {
 
         /** 
          * @ compare based on singularities 
+         * 
+         * deprecated
          * */
         // every point within angleSpan (measured in degree)
         // is consider to be in a straight line
