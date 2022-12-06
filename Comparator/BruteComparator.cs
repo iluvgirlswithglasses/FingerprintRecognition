@@ -72,8 +72,8 @@ namespace FingerprintRecognition.Comparator {
 
             var aLoop = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.LOOP, a);
             var aDelta = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.DELTA, a);
-            var bLoop = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.LOOP, b);
-            var bDelta = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.DELTA, b);
+            var bLoop = ExtractType(B.SingularMgr.CoreSingularLst, Singularity.LOOP, b);
+            var bDelta = ExtractType(B.SingularMgr.CoreSingularLst, Singularity.DELTA, b);
 
             // deg would not be increased by angleSpan after each iteration
             double offLim = (double)12 / 180 * PI;
@@ -230,10 +230,13 @@ namespace FingerprintRecognition.Comparator {
                             );
                         }
 
+                        Console.WriteLine("{0} {1}", u, v);
+
                         // match
-                        if (d <= 12 * PI / 180 && Abs(CalcLen(u) - CalcLen(v)) <= DistTolerance) {
+                        if (d <= 45 * PI / 180 && Abs(CalcLen(u) - CalcLen(v)) <= DistTolerance) {
                             matches++;
                             selected[i] = true;
+                            break;
                         }
                     }
                 }
