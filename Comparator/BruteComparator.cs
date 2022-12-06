@@ -24,22 +24,18 @@ namespace FingerprintRecognition.Comparator {
         public Pair<int, int> CenterB = new();
 
         //
-        int UsefulRad;
         int AngleSpanDeg;
         double AngleSpanRad;
-        double DistTolerance;
 
         /** 
          * @ drivers 
          * */
-        public BruteComparator(FImage a, FImage b, int usefulRad, int angleSpanDeg, double distTolerance) {
+        public BruteComparator(FImage a, FImage b, int angleSpanDeg) {
             A = a;
             B = b;
 
-            UsefulRad = usefulRad;
             AngleSpanDeg = angleSpanDeg;
             AngleSpanRad = angleSpanDeg * PI / 180;
-            DistTolerance = distTolerance;
 
             // assume that a pair of core sigularity is the same
             // proceed comparison 
@@ -62,6 +58,8 @@ namespace FingerprintRecognition.Comparator {
         }
 
         private double CalcScore(double ridge, double singu) {
+            // to get rid of singularity checker
+            // REMOVE the singu here
             return ridge + singu;
         }
 
@@ -70,10 +68,10 @@ namespace FingerprintRecognition.Comparator {
          * */
         public void Compare(Pair<int, int> a, Pair<int, int> b) {
 
-            var aLoop = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.LOOP, a);
-            var aDelta = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.DELTA, a);
-            var bLoop = ExtractType(B.SingularMgr.CoreSingularLst, Singularity.LOOP, b);
-            var bDelta = ExtractType(B.SingularMgr.CoreSingularLst, Singularity.DELTA, b);
+            var aLoop = ExtractType(A.SingularMgr.CoreSingularLst, a, b, Singularity.LOOP, B.SegmentMask);
+            var aDelta = ExtractType(A.SingularMgr.CoreSingularLst, a, b, Singularity.DELTA, B.SegmentMask);
+            var bLoop = ExtractType(B.SingularMgr.CoreSingularLst, b, a, Singularity.LOOP, A.SegmentMask);
+            var bDelta = ExtractType(B.SingularMgr.CoreSingularLst, b, a, Singularity.DELTA, A.SegmentMask);
 
             // deg would not be increased by angleSpan after each iteration
             double offLim = (double)12 / 180 * PI;
@@ -83,8 +81,8 @@ namespace FingerprintRecognition.Comparator {
             for (double off = -offLim; off <= offLim; off += offInc) {
                 int ridgeComparisonCnt = 0;
                 double ridgeMismatch = 0;
-                int singuComparisonCnt = 0;
-                int singuMismatch = 0;
+                int singuComparisonCnt = Max(aLoop.Count, bLoop.Count) + Max(aDelta.Count, bDelta.Count);
+                int singuMatch = 0;
                 // 360deg ridge compare
                 for (double d = 0; d <= PI * 2; d += AngleSpanRad) {
                     CompareRidge(a, b, d, off, ref ridgeComparisonCnt, ref ridgeMismatch);
@@ -94,12 +92,12 @@ namespace FingerprintRecognition.Comparator {
                     double rmm = ridgeMismatch / ridgeComparisonCnt;
                     // there's a sufficient amount of ridge
                     // --> proceed to compare relative singularities
-                    ComparePointSet(aLoop, bLoop, off, ref singuComparisonCnt, ref singuMismatch);
-                    ComparePointSet(aDelta, bDelta, off, ref singuComparisonCnt, ref singuMismatch);
+                    ComparePointSet(aLoop, bLoop, a, b, off, ref singuMatch);
+                    ComparePointSet(aDelta, bDelta, a, b, off, ref singuMatch);
 
                     double smm = 0;
                     if (singuComparisonCnt > 0)
-                        smm = (double)singuMismatch / singuComparisonCnt;
+                        smm = (double)(singuComparisonCnt - singuMatch) / singuComparisonCnt;
 
                     // whether to use this new result or not
                     if (CalcScore(rmm, smm) < CalcScore()) {
@@ -207,11 +205,46 @@ namespace FingerprintRecognition.Comparator {
             return cnt;
         }
 
+        // count the number of ridges between two points
+        static private int CountRidges(Pair<int, int> st, Pair<int, int> fi, bool[,] ske, int margin) {
+            int cnt = 0;
+            bool pre = false;
+
+            Pair<double, double> v = GetVector(fi, st);
+            v = new(-v.Nd, v.St);   // {y, x}
+            double a = v.Nd, b = v.St, c = -a * st.Nd - b * st.St;
+
+            if (Abs(st.St - fi.St) > Abs(st.Nd - fi.Nd)) {
+                // y diff > x diff
+                for (int y = Min(st.St, fi.St) + margin; y <= Max(st.St, fi.St) - margin; y++) {
+                    int x = (int)Round((-b * y - c) / a);
+                    //
+                    if (ske[y, x] && !pre)
+                        cnt++;
+                    pre = ske[y, x];
+                }
+            }
+            else {
+                // y diff <= x diff
+                for (int x = Min(st.Nd, fi.Nd) + margin; x <= Max(st.Nd, fi.Nd) - margin; x++) {
+                    int y = (int)Round((-a * x - c) / b);
+                    //
+                    if (ske[y, x] && !pre)
+                        cnt++;
+                    pre = ske[y, x];
+                }
+            }
+            return cnt;
+        }
+
         /** 
          * @ compare based on singularities 
          * */
-        private void ComparePointSet(List<Pair<double, double>> a, List<Pair<double, double>> b, double rad, ref int cnt, ref int mmscore) {
-            int matches = 0;
+        private void ComparePointSet(
+            List<Pair<double, double>> a, List<Pair<double, double>> b, 
+            Pair<int, int> ca, Pair<int, int> cb,
+            double rad, ref int matches
+        ) {
             bool[] selected = new bool[b.Count];
 
             foreach (Pair<double, double> u in a) {
@@ -228,12 +261,22 @@ namespace FingerprintRecognition.Comparator {
                                 Abs(uAng) + Abs(vAng),
                                 Abs(Abs(uAng) - PI) + Abs(Abs(vAng) - PI)
                             );
+                            if (d > PI)
+                                d = 2 * PI - d;
                         }
 
-                        Console.WriteLine("{0} {1}", u, v);
+                        // matcher
+                        const int margin = 16;
+                        const int ridgeTolerance = 3;
+                        Pair<int, int> aDes = new((int)(ca.St + u.St), (int)(ca.Nd + u.Nd));
+                        Pair<int, int> bDes = new((int)(cb.St + v.St), (int)(cb.Nd + v.Nd));
 
-                        // match
-                        if (d <= 45 * PI / 180 && Abs(CalcLen(u) - CalcLen(v)) <= DistTolerance) {
+                        if (
+                            // the angle different is less than 30 deg
+                            d <= PI * 40 / 180 &&
+                            // the ridges different is less than 3 ridges
+                            Abs(CountRidges(ca, aDes, A.Skeleton, margin) - CountRidges(cb, bDes, B.Skeleton, margin)) <= ridgeTolerance
+                        ) {
                             matches++;
                             selected[i] = true;
                             break;
@@ -241,20 +284,31 @@ namespace FingerprintRecognition.Comparator {
                     }
                 }
             }
-
-            cnt += a.Count;
-            mmscore += a.Count - matches;
         }
 
-        public List<Pair<double, double>> ExtractType(List<Pair<Pair<int, int>, int>> ls, int t, Pair<int, int> c) {
+        static public List<Pair<double, double>> ExtractType(
+            List<Pair<Pair<int, int>, int>> ls, 
+            Pair<int, int> ca, Pair<int, int> cb, int typ,
+            bool[,] mskB
+        ) {
             List<Pair<double, double>> res = new();
             foreach (var i in ls) {
                 if (
-                    i.Nd == t && 
-                    Abs(i.St.St - c.St) <= UsefulRad && Abs(i.St.Nd - c.Nd) <= UsefulRad &&
-                    i.St.St != c.St && i.St.Nd != c.Nd
+                    i.Nd == typ && 
+                    i.St.St != ca.St && i.St.Nd != ca.Nd
                 ) {
-                    res.Add(GetVector(c, i.St));
+                    Pair<double, double> u = GetVector(ca, i.St);
+                    Pair<int, int> v = new((int)(cb.St + u.St), (int)(cb.Nd + u.Nd));
+                    // if this point is within the mask of the mask of the other fingerprint
+                    // and the length is reasonable
+                    if (
+                        0 <= v.St && v.St < mskB.GetLength(0) &&
+                        0 <= v.Nd && v.Nd < mskB.GetLength(1) &&
+                        mskB[v.St, v.Nd] && 
+                        CalcLen(u) <= 100
+                    ) {
+                        res.Add(u);
+                    }
                 }
             }
             return res;

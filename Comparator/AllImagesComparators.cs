@@ -29,21 +29,20 @@ namespace FingerprintRecognition.Comparator {
          * 
          * 
          * */
-        public void BruteCompare(int usefulRad, int angleSpanDeg, double distTolerance, double acceptedScore) {
+        public void BruteCompare(int angleSpanDeg, double acceptedScore) {
             for (int i = St; i < Fi; i++) {
                 for (int j = i + 1; j < Fi; j++) {
                     int u = GetParent(i - St), v = GetParent(j - St);
 
-                    if (v != j - St) continue;  // j already has a group
+                    if (u != i - St || v != j - St) continue;  // i or j already has a group
 
-                    BruteComparator cmp = new(Imgs[u + St], Imgs[j], usefulRad, angleSpanDeg, distTolerance);
+                    BruteComparator cmp = new(Imgs[u + St], Imgs[j], angleSpanDeg);
                     Console.WriteLine(String.Format(
                         "Comparing {0} and {1}:\nCA = {2}, CB = {3};\nRidge MMScore = {4}; Singu MMScore = {5};\nScore = {6} [{7}]\n", 
                         i, j,
                         cmp.CenterA, cmp.CenterB,
                         cmp.RidgeMismatchScore, cmp.SingularityMismatchScore,
                         cmp.CalcScore(), cmp.CalcScore() <= acceptedScore
-
                     ));
                     if (cmp.CalcScore() <= acceptedScore) {
                         Join(i - St, j - St);

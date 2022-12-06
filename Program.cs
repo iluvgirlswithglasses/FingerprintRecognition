@@ -18,7 +18,7 @@ const double ACCEPTED_MISMATCH = 0.095;
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 const int IM_COUNT = 66;
-const int START = 11, END = 13;
+const int START = 0, END = 7;
 
 /** @ get files */
 FImage[] imgs = new FImage[IM_COUNT];
@@ -34,7 +34,7 @@ for (int i = START; i < END; i++) {
 /** @ compare files */
 AllImagesComparators cmp = new(imgs, START, END);
 // cmp.Compare(true, 0.35, 0.25, 0.25, 0.25);
-cmp.BruteCompare(80, 4, 10, ACCEPTED_MISMATCH);
+cmp.BruteCompare(4, ACCEPTED_MISMATCH);
 cmp.MakeGroup();
 cmp.PrintGroups();
 
