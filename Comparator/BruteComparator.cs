@@ -17,13 +17,11 @@ namespace FingerprintRecognition.Comparator {
          * */
 
         //
-        public double BifurMismatchScore = 1;
-        public double EndingMismatchScore;
         public double RidgeMismatchScore = 1;
         public double SingularityMismatchScore = 1;
 
-        public Pair<int, int> TmpCenterA = new();
-        public Pair<int, int> TmpCenterB = new();
+        public Pair<int, int> CenterA = new();
+        public Pair<int, int> CenterB = new();
 
         //
         int UsefulRad;
@@ -64,13 +62,18 @@ namespace FingerprintRecognition.Comparator {
         }
 
         private double CalcScore(double ridge, double singu) {
-            return 0.6 * ridge + 0.4 * singu;
+            return ridge + singu;
         }
 
         /** 
          * @ compare based on ridges
          * */
         public void Compare(Pair<int, int> a, Pair<int, int> b) {
+
+            var aLoop = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.LOOP, a);
+            var aDelta = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.DELTA, a);
+            var bLoop = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.LOOP, b);
+            var bDelta = ExtractType(A.SingularMgr.CoreSingularLst, Singularity.DELTA, b);
 
             // deg would not be increased by angleSpan after each iteration
             double offLim = (double)12 / 180 * PI;
@@ -80,6 +83,8 @@ namespace FingerprintRecognition.Comparator {
             for (double off = -offLim; off <= offLim; off += offInc) {
                 int ridgeComparisonCnt = 0;
                 double ridgeMismatch = 0;
+                int singuComparisonCnt = 0;
+                int singuMismatch = 0;
                 // 360deg ridge compare
                 for (double d = 0; d <= PI * 2; d += AngleSpanRad) {
                     CompareRidge(a, b, d, off, ref ridgeComparisonCnt, ref ridgeMismatch);
@@ -89,14 +94,20 @@ namespace FingerprintRecognition.Comparator {
                     double rmm = ridgeMismatch / ridgeComparisonCnt;
                     // there's a sufficient amount of ridge
                     // --> proceed to compare relative singularities
+                    ComparePointSet(aLoop, bLoop, off, ref singuComparisonCnt, ref singuMismatch);
+                    ComparePointSet(aDelta, bDelta, off, ref singuComparisonCnt, ref singuMismatch);
+
+                    double smm = 0;
+                    if (singuComparisonCnt > 0)
+                        smm = (double)singuMismatch / singuComparisonCnt;
 
                     // whether to use this new result or not
-                    if (CalcScore(rmm, 1) < CalcScore()) {
+                    if (CalcScore(rmm, smm) < CalcScore()) {
                         RidgeMismatchScore = rmm;
-                        SingularityMismatchScore = 1;
+                        SingularityMismatchScore = smm;
 
-                        TmpCenterA = a;
-                        TmpCenterB = b;
+                        CenterA = a;
+                        CenterB = b;
                     }
                 }
             }
@@ -199,54 +210,50 @@ namespace FingerprintRecognition.Comparator {
         /** 
          * @ compare based on singularities 
          * */
-        private void ComparePointSet(Dictionary<int, SortedSet<double>> a, Dictionary<int, SortedSet<double>> b, ref int cnt, ref int mmscore) {
-            foreach (var i in a.Keys) {
-                foreach (double u in a[i]) {
-                    cnt++;
-                    // C# is TERRIBLE
-                    var s = b[i].GetViewBetween(u - DistTolerance, u + DistTolerance);
-                    if (s.Count == 0) {
-                        mmscore++;
-                        continue;
+        private void ComparePointSet(List<Pair<double, double>> a, List<Pair<double, double>> b, double rad, ref int cnt, ref int mmscore) {
+            int matches = 0;
+            bool[] selected = new bool[b.Count];
+
+            foreach (Pair<double, double> u in a) {
+                double uAng = CalcAngle(u);
+                for (int i = 0; i < b.Count; i++) {
+                    if (!selected[i]) {
+                        Pair<double, double> v = b[i];
+                        v = RotatePoint(v, -rad);
+                        double vAng = CalcAngle(v);
+                        
+                        double d = Abs(uAng - vAng);
+                        if (uAng * vAng < 0) {
+                            d = Min(
+                                Abs(uAng) + Abs(vAng),
+                                Abs(Abs(uAng) - PI) + Abs(Abs(vAng) - PI)
+                            );
+                        }
+
+                        // match
+                        if (d <= 12 * PI / 180 && Abs(CalcLen(u) - CalcLen(v)) <= DistTolerance) {
+                            matches++;
+                            selected[i] = true;
+                        }
                     }
-                    //
-                    double v = 1e9+7;
-                    foreach (var pt in s) {
-                        if (Abs(u - pt) < Abs(u - v))
-                            v = pt;
-                    }
-                    b[i].Remove(v);
                 }
             }
+
+            cnt += a.Count;
+            mmscore += a.Count - matches;
         }
 
         public List<Pair<double, double>> ExtractType(List<Pair<Pair<int, int>, int>> ls, int t, Pair<int, int> c) {
             List<Pair<double, double>> res = new();
             foreach (var i in ls) {
-                if (i.Nd == t && Abs(i.St.St - c.St) <= UsefulRad && Abs(i.St.Nd - c.Nd) <= UsefulRad) {
+                if (
+                    i.Nd == t && 
+                    Abs(i.St.St - c.St) <= UsefulRad && Abs(i.St.Nd - c.Nd) <= UsefulRad &&
+                    i.St.St != c.St && i.St.Nd != c.Nd
+                ) {
                     res.Add(GetVector(c, i.St));
                 }
             }
-            return res;
-        }
-
-        public Dictionary<int, SortedSet<double>> ToRelativePosition(List<Pair<double, double>> pos, double rad) {
-            Dictionary<int, SortedSet<double>> res = new();
-            for (int i = 0; i <= 360; i += AngleSpanDeg)
-                res.Add(i, new());
-            foreach (var p in pos) {
-                if (p.St == 0 && p.Nd == 0)
-                    continue;
-                double len = CalcLen(p);
-                // the angle between vector (y=0, x=1) and vector p
-                double ang = Acos(p.Nd / len);
-                double deg = ang * 180 / PI;
-                if (p.Nd < 0)
-                    deg = 360 - deg;
-                int d = ((int)Floor(deg) / AngleSpanDeg) * AngleSpanDeg;
-                res[d].Add(len);
-            }
-
             return res;
         }
 
@@ -272,7 +279,9 @@ namespace FingerprintRecognition.Comparator {
         }
 
         static private double CalcAngle(Pair<double, double> v) {
-            return Atan2(v.St, v.Nd);
+            double rad = Acos(v.Nd / CalcLen(v));
+            if (v.St < 0) rad = -rad;
+            return rad;
         }
     }
 }

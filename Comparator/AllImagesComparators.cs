@@ -38,11 +38,14 @@ namespace FingerprintRecognition.Comparator {
 
                     BruteComparator cmp = new(Imgs[u + St], Imgs[j], usefulRad, angleSpanDeg, distTolerance);
                     Console.WriteLine(String.Format(
-                        "Comparing {0} and {1}: Ridge MMScore = {2} [{3}]; CA = {4}, CB = {5}", 
-                        i, j, cmp.RidgeMismatchScore, cmp.RidgeMismatchScore <= acceptedScore,
-                        cmp.TmpCenterA, cmp.TmpCenterB
+                        "Comparing {0} and {1}:\nCA = {2}, CB = {3};\nRidge MMScore = {4}; Singu MMScore = {5};\nScore = {6} [{7}]\n", 
+                        i, j,
+                        cmp.CenterA, cmp.CenterB,
+                        cmp.RidgeMismatchScore, cmp.SingularityMismatchScore,
+                        cmp.CalcScore(), cmp.CalcScore() <= acceptedScore
+
                     ));
-                    if (cmp.RidgeMismatchScore <= acceptedScore) {
+                    if (cmp.CalcScore() <= acceptedScore) {
                         Join(i - St, j - St);
                     }
                 }
