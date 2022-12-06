@@ -21,6 +21,9 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
+            if (freqList.Count == 0)
+                return 1.414;   // just in case
+
             // get the median frequency
             freqList.Sort();
             return freqList.ToList()[freqList.Count >> 1];
