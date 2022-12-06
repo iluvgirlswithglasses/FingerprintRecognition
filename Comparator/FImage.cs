@@ -75,6 +75,8 @@ namespace FingerprintRecognition.Comparator {
             // get key points
             Console.WriteLine("Extracting Singularity");
             int[,] singular = Singularity.Create(Norm.Height, Norm.Width, OrientImg, BlockSize, SegmentMask);
+            SingularityCleaner.ExcludeMixedPart(singular);
+            SingularityCleaner.ExcludeSmallPart(singular, Convert.ToInt32(1.25 * ColorCenter.St), BlockSize);
             SingularMgr = new(singular);
 
             // get frequency

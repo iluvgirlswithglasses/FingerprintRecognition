@@ -18,14 +18,14 @@ const double ACCEPTED_MISMATCH = 0.095;
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
 const int IM_COUNT = 66;
-const int START = 11, END = 66;
+const int START = 0, END = 3;
 
 /** @ get files */
 FImage[] imgs = new FImage[IM_COUNT];
 for (int i = START; i < END; i++) {
     Console.WriteLine("Processing file indexed " + i.ToString());
     imgs[i] = new(
-        new Image<Gray, byte>(IN + string.Format("{0}.bmp", i)), BLOCK_SIZE, USEFUL_RADIUS
+        new Image<Gray, byte>(IN + string.Format("{0}.jpg", i)), BLOCK_SIZE, USEFUL_RADIUS
     );
     imgs[i].DisplaySingularity(i.ToString());
     Console.WriteLine();
