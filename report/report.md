@@ -93,6 +93,32 @@ The Rotation of the filter is determined by *block orientation*.
 
 # 2. Comparing
 
-## Cases of Mismatch
+## Verdict: Match
 
+![1](./figures/m-0-r-1.jpg){width=33%} ![9](./figures/m-0-r-9.jpg){width=33%} ![10](./figures/m-0-r-10.jpg){width=33%}
 
+![1](./figures/m-0-s-1.png){width=33%} ![9](./figures/m-0-s-9.png){width=33%} ![10](./figures/m-0-s-10.png){width=33%}
+
+\pagebreak
+
+## Verdict: Match
+
+![11](./figures/m-1-r-11.bmp){width=33%} ![13](./figures/m-1-r-13.bmp){width=33%} ![14](./figures/m-1-r-14.bmp){width=33%}
+
+![11](./figures/m-1-s-11.png){width=33%} ![13](./figures/m-1-s-13.png){width=33%} ![14](./figures/m-1-s-14.png){width=33%}
+
+\pagebreak
+
+## Verdict: Mismatch
+
+![0](./figures/mm-0-r-0.jpg){width=33%} ![4](./figures/mm-0-r-4.jpg){width=33%}
+
+![0](./figures/mm-0-s-0.png){width=33%} ![4](./figures/mm-0-s-4.png){width=33%}
+
+\pagebreak
+
+## Verdict: Mismatch
+
+![16](./figures/mm-1-r-16.bmp){width=33%} ![21](./figures/mm-1-r-21.bmp){width=33%}
+
+![16](./figures/mm-1-s-16.png){width=33%} ![21](./figures/mm-1-s-21.png){width=33%}
