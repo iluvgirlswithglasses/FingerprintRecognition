@@ -99,6 +99,11 @@ The Rotation of the filter is determined by *block orientation*.
 
 ![1](./figures/m-0-s-1.png){width=33%} ![9](./figures/m-0-s-9.png){width=33%} ![10](./figures/m-0-s-10.png){width=33%}
 
+```
+Comparing 1 and 9: MMScore = 0.02355706937779257 [True]
+Comparing 1 and 10: MMScore = 0.03147042916615236 [True]
+```
+
 \pagebreak
 
 ## Verdict: Match
@@ -106,6 +111,11 @@ The Rotation of the filter is determined by *block orientation*.
 ![11](./figures/m-1-r-11.bmp){width=33%} ![13](./figures/m-1-r-13.bmp){width=33%} ![14](./figures/m-1-r-14.bmp){width=33%}
 
 ![11](./figures/m-1-s-11.png){width=33%} ![13](./figures/m-1-s-13.png){width=33%} ![14](./figures/m-1-s-14.png){width=33%}
+
+```
+Comparing 11 and 13: MMScore = 0.06850775829491 [True]
+Comparing 11 and 14: MMScore = 0.057465974475778385 [True]
+```
 
 \pagebreak
 
@@ -115,6 +125,10 @@ The Rotation of the filter is determined by *block orientation*.
 
 ![0](./figures/mm-0-s-0.png){width=33%} ![4](./figures/mm-0-s-4.png){width=33%}
 
+```
+Comparing 0 and 4: Ridge MMScore = 0.11450558858066591 [False]
+```
+
 \pagebreak
 
 ## Verdict: Mismatch
@@ -122,3 +136,11 @@ The Rotation of the filter is determined by *block orientation*.
 ![16](./figures/mm-1-r-16.bmp){width=33%} ![21](./figures/mm-1-r-21.bmp){width=33%}
 
 ![16](./figures/mm-1-s-16.png){width=33%} ![21](./figures/mm-1-s-21.png){width=33%}
+
+```
+Comparing 16 and 21:
+CA = (268, 155), CB = (259, 183);
+Ridge MMScore = 0.2133995812504585; 
+Singu MMScore = 0.5; 
+MMScore = 0.7133995812504585 [False]
+```
