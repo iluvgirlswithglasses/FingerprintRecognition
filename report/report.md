@@ -58,3 +58,5 @@ Then we can calculate the gradient angle for each block.
 \pagebreak
 
 ## 4. Ridges' Frequency
+
+
