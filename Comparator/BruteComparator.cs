@@ -156,7 +156,7 @@ namespace FingerprintRecognition.Comparator {
                         break;
                     dist++;
                 }
-            }
+            } 
             else {
                 // y diff <= x diff
                 int xInc = 1;

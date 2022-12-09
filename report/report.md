@@ -110,9 +110,17 @@ Comparing 1 and 10: MMScore = 0.03147042916615236 [True]
 
 ## MMScore's Calculation
 
-For each span:
+![1](./figures/mmcalc-1.png){width=33%} ![9](./figures/mmcalc-9.png){width=33%}
 
-$$\text{Ridges Mismatch Score} = \dfrac{|A-B|}{max(A, b)}$$
+Compare respective spans:
+
+![1](./figures/mmcalc-1-span.png){height=5%} ![9](./figures/mmcalc-9-span.png){height=5%}
+
+$$\text{Ridges Mismatch Score} = \dfrac{|A - B|}{max(A, B)}$$
+
+$$\text{Keypoints Mismatch Score} = \dfrac{|f(A) - f(B)|}{max(f(A), f(B))}$$ 
+
+$$\text{where} f(X) \text{is a keypoints segmentation function.}$$
 
 \pagebreak
 

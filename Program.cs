@@ -1,11 +1,10 @@
-﻿using System.Reflection;
-using Emgu.CV;
+﻿using Emgu.CV;
 using Emgu.CV.Structure;
 using FingerprintRecognition.Comparator;
 using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Filter;
 using FingerprintRecognition.MatrixConverter;
-using static System.Net.Mime.MediaTypeNames;
+using static System.Math;
 
 /** @ program parameters */
 const int BLOCK_SIZE = 16;
