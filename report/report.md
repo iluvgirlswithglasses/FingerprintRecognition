@@ -1,6 +1,6 @@
 ---
 title: "Fingerprint Recognition"
-author: "iluvgirlswithglasses"
+author: "Lưu Nam Đạt"
 date: "Dec-5-2022"
 geometry: margin=2cm
 output: 
@@ -19,11 +19,13 @@ fontsize: 12pt
 
 ![Normalization](./figures/1-norm.png){height=40%}
 
-$$S = Std(M) = \sqrt{ \dfrac{ \sum((M_{ij} - Avg(M))^2) }{Size(M)} }$$
+$$A(M) = \dfrac{\sum M_{ij}}{Size(M)}$$
 
-$$\delta = \dfrac{\sqrt{S_{0} \times (M_{ij} - Avg(M))^2}}{S} $$
+$$S = Std(M) = \sqrt{ \dfrac{ \sum((M_{ij} - A(M))^2) }{Size(M)} }$$
 
-$$M_{ij} = \begin{cases}Avg_{0} - \delta,& \text{if } M_{ij} \geq Avg(M) \\ Avg_{0} + \delta, & \text{if } M_{ij} < Avg(M)\end{cases}$$
+$$\delta = \dfrac{\sqrt{S_{0} \times (M_{ij} - A(M))^2}}{S} $$
+
+$$M_{ij} = \begin{cases}A_{0} - \delta,& \text{if } M_{ij} \geq A(M) \\ A_{0} + \delta, & \text{if } M_{ij} < A(M)\end{cases}$$
 
 \pagebreak
 
@@ -103,6 +105,14 @@ The Rotation of the filter is determined by *block orientation*.
 Comparing 1 and 9: MMScore = 0.02355706937779257 [True]
 Comparing 1 and 10: MMScore = 0.03147042916615236 [True]
 ```
+
+\pagebreak
+
+## MMScore's Calculation
+
+For each span:
+
+$$\text{Ridges Mismatch Score} = \dfrac{|A-B|}{max(A, b)}$$
 
 \pagebreak
 

@@ -1,6 +1,10 @@
 ﻿using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Tool;
 
+// this skel solution has a freaking bug
+// imma make another skel sol based on this idea:
+// https://felix.abecassis.me/2011/09/opencv-morphological-skeleton/
+
 namespace FingerprintRecognition.Filter {
 
     public class Skeletonization {

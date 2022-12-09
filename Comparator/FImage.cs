@@ -85,7 +85,8 @@ namespace FingerprintRecognition.Comparator {
 
             // gabor filter, then skeletonization
             Console.WriteLine("Gabor filter");
-            Skeleton = Binary.Create(Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize), 100);
+            double[,] gabor = Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize);
+            Skeleton = Binary.Create(gabor, 100);
             Console.WriteLine("Skeletonization");
             new Skeletonization(Skeleton).Apply();
 

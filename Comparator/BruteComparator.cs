@@ -79,16 +79,23 @@ namespace FingerprintRecognition.Comparator {
 
             // rotate the second fingerprint
             for (double off = -offLim; off <= offLim; off += offInc) {
+
+                // ridges comparision
                 int ridgeComparisonCnt = 0;
                 double ridgeMismatch = 0;
+                int totalDist = 0;
+
+                // singularities
                 int singuComparisonCnt = Max(aLoop.Count, bLoop.Count) + Max(aDelta.Count, bDelta.Count);
                 int singuMatch = 0;
+
                 // 360deg ridge compare
                 for (double d = 0; d <= PI * 2; d += AngleSpanRad) {
-                    CompareRidge(a, b, d, off, ref ridgeComparisonCnt, ref ridgeMismatch);
+                    CompareRidge(a, b, d, off, ref ridgeComparisonCnt, ref ridgeMismatch, ref totalDist);
                 }
-                // comparison count threshold
-                if (ridgeComparisonCnt > PI / AngleSpanRad) {
+
+                // there's enough information to be considered "reliable"
+                if (totalDist >= 3600) {    // 3600 == (360/4) * 40
                     double rmm = ridgeMismatch / ridgeComparisonCnt;
                     // there's a sufficient amount of ridge
                     // --> proceed to compare relative singularities
@@ -111,7 +118,7 @@ namespace FingerprintRecognition.Comparator {
             }
         }
 
-        public void CompareRidge(Pair<int, int> a, Pair<int, int> b, double d, double off, ref int cnt, ref double mm) {
+        public void CompareRidge(Pair<int, int> a, Pair<int, int> b, double d, double off, ref int cnt, ref double mm, ref int totalDist) {
             // VTPT of this line:
             // (Cos(d), -Sin(d))
             int dist = Min(
@@ -119,6 +126,7 @@ namespace FingerprintRecognition.Comparator {
                 GetDist(B.SegmentMask, b, Cos(d + off), -Sin(d + off))
             );
             dist = Convert.ToInt32(0.8 * dist);
+            totalDist += dist;
 
             // the distance is too insignificant to extract reliable information
             if (dist < 30) return;
