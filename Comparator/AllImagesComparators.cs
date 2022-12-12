@@ -26,10 +26,9 @@ namespace FingerprintRecognition.Comparator {
 
         /** 
          * @ compare all fingerprints in [Fi:St) using BruteComparator
-         * 
-         * 
+         * and group them via DSU
          * */
-        public void BruteCompare(int angleSpanDeg, double acceptedScore) {
+        public void Compare(int angleSpanDeg, double acceptedScore) {
             for (int i = St; i < Fi; i++) {
                 for (int j = i + 1; j < Fi; j++) {
                     int u = GetParent(i - St), v = GetParent(j - St);
@@ -49,42 +48,6 @@ namespace FingerprintRecognition.Comparator {
                     }
                 }
             }
-        }
-
-        /** 
-         * @ compare all fingerprints in [Fi:St) using SingularityComparator
-         * 
-         * ss: whether or not all significant singularities of two fingerprint must match
-         * angleTolerance: the first two singularities' angle tolerance
-         * sLenTolerance: singularities distance mismatches mismatch threshold
-         * sAngleTolerance: singularities angle mismatches threshold
-         * */
-        public void Compare(bool ss, double angleTolerance, double sLenTolerance, double sAngleTolerance, double sRidgeTolerance) {
-            for (int i = St; i < Fi; i++) {
-                for (int j = i + 1; j < Fi; j++) {
-                    SingularityComparator cmp = new SingularityComparator(
-                        Imgs[i], Imgs[j]
-                    );
-                    bool accepted = MatchTolerance(cmp, ss, angleTolerance, sLenTolerance, sAngleTolerance, sRidgeTolerance);
-                    if (accepted) {
-                        Join(i - St, j - St);
-                    }
-
-                    Console.WriteLine(
-                        "Img {0} & {1}: {2}\nSinguls match = {3}, angle diff = {4}, s angle diff = {5}, dist diff = {5}, ridges mismatch score = {6}\n", 
-                        i, j, accepted, cmp.SMatches, cmp.AngleDiff, cmp.SAngleMismatchScore, cmp.SLenMismatchScore, cmp.SingulRidgesMismatchScore
-                    );
-                }
-            }
-        }
-
-        public bool MatchTolerance(SingularityComparator cmp, bool ss, double angleTolerance, double sLenTolerance, double sAngleTolerance, double sRidgeTolerance) {
-            if (ss && !cmp.SMatches)
-                return false;
-            return cmp.AngleDiff <= angleTolerance &&
-                   cmp.SLenMismatchScore <= sLenTolerance && 
-                   cmp.SAngleMismatchScore <= sAngleTolerance &&
-                   cmp.SingulRidgesMismatchScore <= sRidgeTolerance;
         }
 
         /** @ dsu */
@@ -107,9 +70,6 @@ namespace FingerprintRecognition.Comparator {
             return true;
         }
 
-        /** 
-         * @ printing
-         * */ 
         public void MakeGroup() {
             // group matches
             for (int i = 0; i < Cnt; i++) {

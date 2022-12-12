@@ -280,8 +280,8 @@ namespace FingerprintRecognition.Comparator {
                         Pair<int, int> bDes = new((int)(cb.St + v.St), (int)(cb.Nd + v.Nd));
 
                         if (
-                            // the angle different is less than 30 deg
-                            d <= PI * 40 / 180 &&
+                            // the angle different is less than 8 deg
+                            d <= PI * 8 / 180 &&
                             // the ridges different is less than 3 ridges
                             Abs(CountRidges(ca, aDes, A.Skeleton, margin) - CountRidges(cb, bDes, B.Skeleton, margin)) <= ridgeTolerance
                         ) {
