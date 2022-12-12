@@ -88,7 +88,7 @@ namespace FingerprintRecognition.Comparator {
             double[,] gabor = Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize);
             Skeleton = Binary.Create(gabor, 100);
             Console.WriteLine("Skeletonization");
-            new Skeletonization(Skeleton).Apply();
+            new Skeletonization(Skeleton).BruteApply();
 
             // now that all the singularities are extracted
             // i'll keep the long ridges only

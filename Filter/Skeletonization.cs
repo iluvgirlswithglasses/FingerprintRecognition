@@ -27,6 +27,9 @@ namespace FingerprintRecognition.Filter {
             width = Img.GetLength(1);
         }
 
+        /**
+         * @ dfs approach (broken)
+         * */
         public void Apply() {
             Deque<KeyValuePair<int, int>> queue = new();
             // get the outline first
@@ -52,7 +55,26 @@ namespace FingerprintRecognition.Filter {
                     if (Img[y + i, x + j]) queue.AddToBack(new(y + i, x + j));
         }
 
+        /** 
+         * @ brute approach
+         * */
+        public void BruteApply() {
+            int rem = 1;
+            while (rem > 0) {
+                rem = 0;
+                Iterator2D.Forward(1, 1, height - 1, width - 1, (y, x) => {
+                    if (CanRemove(y, x)) {
+                        rem++;
+                        Img[y, x] = false;
+                    }
+                    return true;
+                });
+            }
+        }
+
         private bool CanRemove(int y, int x) {
+            if (!Img[y, x]) return false;
+
             int adj = GetAdj(y, x), shf = GetShift(y, x);
 
             return 
