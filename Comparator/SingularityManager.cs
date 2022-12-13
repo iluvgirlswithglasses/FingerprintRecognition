@@ -42,10 +42,8 @@ namespace FingerprintRecognition.Comparator {
             foreach (var i in Whorls) SingularLst.Add(new(i, Singularity.WHORL));
             */
             foreach (var i in Loops) CoreSingularLst.Add(new(i, Singularity.LOOP));
-            if (CoreSingularLst.Count == 0) 
-                foreach (var i in Deltas) CoreSingularLst.Add(new(i, Singularity.DELTA));
-            if (CoreSingularLst.Count == 0)
-                foreach (var i in Whorls) CoreSingularLst.Add(new(i, Singularity.WHORL));
+            foreach (var i in Deltas) CoreSingularLst.Add(new(i, Singularity.DELTA));
+            foreach (var i in Whorls) CoreSingularLst.Add(new(i, Singularity.WHORL));
 
             // uncomment this for SingularityComparator
             // SortSingularLst(SingularLst);

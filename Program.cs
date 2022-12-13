@@ -39,8 +39,8 @@ void RangeCompare() {
 }
 
 void TargetCompare() {
-    int cnt = 4;
-    string[] files = new string[]{"15.bmp", "35.bmp", "36.bmp", "37.bmp"};
+    int cnt = 2;
+    string[] files = new string[]{"100.bmp", "101.bmp"};
     FImage[] imgs = new FImage[cnt];
     for (int i = 0; i < cnt; i++) {
         Console.WriteLine("Processing file " + files[i]);

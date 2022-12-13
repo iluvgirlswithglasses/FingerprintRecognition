@@ -3,6 +3,13 @@ using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Filter;
 using static System.Math;
 
+/**
+ * @ todo: 
+ * 
+ * merge ComparePointSet and CompareRidge into one
+ * points set will be compared within the spans divided in CompareRidge
+ * */
+
 namespace FingerprintRecognition.Comparator {
 
     internal class BruteComparator {
@@ -11,14 +18,6 @@ namespace FingerprintRecognition.Comparator {
 
         FImage A, B;
 
-        /** 
-         * @ loss core:
-         * 
-         * represent the amount of information that one of the fingerprint has
-         * but the other does not
-         * */
-
-        //
         public double RidgeMismatchScore = 1;
         public double SingularityMismatchScore = 1;
 
@@ -120,7 +119,12 @@ namespace FingerprintRecognition.Comparator {
             }
         }
 
-        public void CompareRidge(Pair<int, int> a, Pair<int, int> b, double d, double off, ref int cnt, ref double mm, ref int totalDist) {
+        public void CompareRidge(
+            Pair<int, int> a, Pair<int, int> b,     // the center of two image
+            double d, double off,                   // the angle, and the offset
+            ref int rcnt, ref double rmm,           // ridges count & mismatches
+            ref int totalDist                       // distance compared, measured in pixel
+        ) {
             // VTPT of this line:
             // (Cos(d), -Sin(d))
             int dist = Min(
@@ -135,9 +139,9 @@ namespace FingerprintRecognition.Comparator {
 
             int aCnt = CountRidges(A.Skeleton, a, Cos(d), -Sin(d), dist);
             int bCnt = CountRidges(B.Skeleton, b, Cos(d + off), -Sin(d + off), dist);
-            cnt++;
+            rcnt++;
             if (Max(aCnt, bCnt) > 0) {
-                mm += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
+                rmm += (double)Abs(aCnt - bCnt) / Max(aCnt, bCnt);
             }
         }
 
@@ -283,7 +287,7 @@ namespace FingerprintRecognition.Comparator {
 
                         if (
                             // the angle different is less than 8 deg
-                            d <= PI * 8 / 180 &&
+                            d <= PI * 30 / 180 &&
                             // the ridges different is less than 3 ridges
                             Abs(CountRidges(ca, aDes, A.Skeleton, margin) - CountRidges(cb, bDes, B.Skeleton, margin)) <= ridgeTolerance
                         ) {
