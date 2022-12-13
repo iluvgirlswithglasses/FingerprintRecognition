@@ -7,6 +7,8 @@ namespace FingerprintRecognition.Comparator {
 
     internal class BruteComparator {
 
+        public static int SafeLength = 120;
+
         FImage A, B;
 
         /** 
@@ -125,7 +127,7 @@ namespace FingerprintRecognition.Comparator {
                 GetDist(A.SegmentMask, a, Cos(d), -Sin(d)),
                 GetDist(B.SegmentMask, b, Cos(d + off), -Sin(d + off))
             );
-            dist = Convert.ToInt32(0.8 * dist);
+            dist = Min(Convert.ToInt32(0.8 * dist), SafeLength);
             totalDist += dist;
 
             // the distance is too insignificant to extract reliable information
@@ -313,7 +315,7 @@ namespace FingerprintRecognition.Comparator {
                         0 <= v.St && v.St < mskB.GetLength(0) &&
                         0 <= v.Nd && v.Nd < mskB.GetLength(1) &&
                         mskB[v.St, v.Nd] && 
-                        CalcLen(u) <= 100
+                        CalcLen(u) <= SafeLength
                     ) {
                         res.Add(u);
                     }
