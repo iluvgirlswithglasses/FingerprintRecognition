@@ -96,8 +96,6 @@ namespace FingerprintRecognition.Filter {
 
             // double[,] pseudoFilter = AffineRotation<double>.KeepSizeCreate(refFilter, 0);
 
-            Console.WriteLine("Entering Slow Filt Gabor...");
-
             Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
                 if (!msk[y, x])
                     return false;
@@ -123,8 +121,6 @@ namespace FingerprintRecognition.Filter {
 
         static private void QuickFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
 
-            Console.WriteLine("Entering Quick Filt Gabor...");
-
             double angleInc = PI * 3 / 180;
             List<double> acceptedAngles = new();
             for (double i = -PI/2; i <= PI/2; i += angleInc)
@@ -139,7 +135,6 @@ namespace FingerprintRecognition.Filter {
              * @ note for improvement:
              *      this stage might be optimized using FFT
              * */
-            Console.WriteLine("Entering Convolution Stage of Quick Filt Gabor...");
             //
             Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
                 if (!msk[y, x])

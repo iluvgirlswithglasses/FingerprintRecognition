@@ -1,9 +1,12 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using FingerprintRecognition;
 using FingerprintRecognition.Comparator;
 using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Filter;
 using FingerprintRecognition.MatrixConverter;
+using FingerprintRecognition.Tool;
+using SmartVector.Model;
 using static System.Math;
 
 /** @ program parameters */
@@ -16,7 +19,7 @@ const double ACCEPTED_MISMATCH = 0.095;
 /** @ temporary constants */
 const string IN  = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images\\";
 const string OUT = "D:\\r\\siglaz\\FingerprintRecognition\\sample-images-o\\";
-const int START = 0, END = 3;
+const int START = 0, END = 50;
 
 void RangeCompare() {
     /** @ get files */
@@ -65,7 +68,16 @@ void TargetCompare() {
 }
 
 /** @ main */
-FImage img = new FImage(
-    new Image<Gray, byte>(IN + "100.bmp"), BLOCK_SIZE, USEFUL_RADIUS
-);
-CvInvoke.Imwrite(OUT + "gabor-100.png", ToImage.FromDoubleMatrix(img.GaborImg));
+Image<Gray, byte> src = new(OUT + "gabor-101.png");
+byte[,] mat = new byte[src.Height, src.Width];
+MatTool<byte>.Forward(ref mat, (y, x, v) => {
+    if (src[y, x].Intensity > 250) mat[y, x] = 255;
+    return true;
+});
+ZhangSuen.ZhangSuenThinning(mat);
+MatTool<byte>.Forward(ref mat, (y, x, v) => {
+    src[y, x] = new Gray(mat[y, x]);
+    return true;
+});
+CvInvoke.Imwrite(OUT + "zhang.png", src);
+

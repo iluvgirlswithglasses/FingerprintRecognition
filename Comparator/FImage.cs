@@ -60,14 +60,6 @@ namespace FingerprintRecognition.Comparator {
             // Console.WriteLine("Trimming Mask");
             // Segmentation.BFSTrim(SegmentMask, 5);
 
-
-            /*
-            // crop the masks
-            Console.WriteLine("Cropping the mask");
-            UsefulRadius = Convert.ToInt32(usefulRad * (Segmentation.GetMaskWidth(SegmentMask) >> 1));
-            Segmentation.CropMask(SegmentMask, Center, UsefulRadius);
-            */
-
             // get ridges orient
             Console.WriteLine("Orientation");
             OrientImg = OrientMat.Create(Norm, BlockSize);
