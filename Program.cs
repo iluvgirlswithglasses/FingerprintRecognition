@@ -65,4 +65,7 @@ void TargetCompare() {
 }
 
 /** @ main */
-TargetCompare();
+FImage img = new FImage(
+    new Image<Gray, byte>(IN + "100.bmp"), BLOCK_SIZE, USEFUL_RADIUS
+);
+CvInvoke.Imwrite(OUT + "gabor-100.png", ToImage.FromDoubleMatrix(img.GaborImg));

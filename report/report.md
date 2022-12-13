@@ -89,7 +89,7 @@ The Rotation of the filter is determined by *block orientation*.
 
 ![Detect Singularities](./figures/corepoints.png){height=25%}
 
-![Singularities and Keypoints](./figures/9-singularities.png){height=40%}
+![Singularities and Keypoints](./figures/9-singularities.png){width=33%} ![another](./figures/singular-18.png){width=33%} ![another](./figures/m-1-s-11.png){width=33%}
 
 \pagebreak
 

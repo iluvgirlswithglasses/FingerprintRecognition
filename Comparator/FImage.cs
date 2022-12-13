@@ -22,6 +22,7 @@ namespace FingerprintRecognition.Comparator {
         public bool[,] SegmentMask;
         public double[,] OrientImg;
         public double[,] FrequencyImg;
+        public double[,] GaborImg;
         public bool[,] Skeleton;
 
         /** @ singularity matrices */
@@ -85,8 +86,8 @@ namespace FingerprintRecognition.Comparator {
 
             // gabor filter, then skeletonization
             Console.WriteLine("Gabor filter");
-            double[,] gabor = Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize);
-            Skeleton = Binary.Create(gabor, 100);
+            GaborImg = Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize);
+            Skeleton = Binary.Create(GaborImg, 100);
             Console.WriteLine("Skeletonization");
             new Skeletonization(Skeleton).BruteApply();
 
