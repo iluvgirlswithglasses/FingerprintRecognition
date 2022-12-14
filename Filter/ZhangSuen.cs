@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace SmartVector.Model
+namespace FingerprintRecognition.Filter
 {
     /// <summary>
     /// Implements skeletonization by Zhang-Suen Thinning algorithm

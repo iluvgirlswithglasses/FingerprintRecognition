@@ -22,7 +22,7 @@ namespace FingerprintRecognition.Comparator {
         public bool[,] SegmentMask;
         public double[,] OrientImg;
         public double[,] FrequencyImg;
-        public double[,] GaborImg;
+        public byte[,] GaborImg;
         public bool[,] Skeleton;
 
         /** @ singularity matrices */
@@ -76,17 +76,19 @@ namespace FingerprintRecognition.Comparator {
             Console.WriteLine("Frequency");
             FrequencyImg = RidgeFrequencyMat.Create(Norm, SegmentMask, OrientImg, BlockSize, 5);
 
-            // gabor filter, then skeletonization
+            // gabor filter
             Console.WriteLine("Gabor filter");
             GaborImg = Gabor.Create(Norm, OrientImg, FrequencyImg, SegmentMask, BlockSize);
-            Skeleton = Binary.Create(GaborImg, 100);
+
+            // skeletonization
             Console.WriteLine("Skeletonization");
-            new Skeletonization(Skeleton).BruteApply();
+            ZhangSuen.ZhangSuenThinning(GaborImg);
+            Skeleton = Binary.Create(GaborImg, 100);
 
             // now that all the singularities are extracted
             // i'll keep the long ridges only
-            Console.WriteLine("Removing Skeleton's noises");
-            Skeletonization.RemoveShortRidges(Skeleton, 20);
+            // Console.WriteLine("Removing Skeleton's noises");
+            // Skeletonization.RemoveShortRidges(Skeleton, 20);
             int margin = (int) Math.Round(3.0 / Gabor.GetMedianFreq(FrequencyImg) * 0.65);
             SingularMgr.ExtractKeysFromSkeleton(Skeleton, SegmentMask, margin);
         }

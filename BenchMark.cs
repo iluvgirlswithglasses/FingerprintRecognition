@@ -50,6 +50,7 @@ namespace FingerprintRecognition {
         }
 
         public void Run() {
+            Console.WriteLine("Running Benchmark");
             Counter = new();
 
             Counter.Start();
@@ -107,15 +108,14 @@ namespace FingerprintRecognition {
             Counter.Restart();
             Each((i) => {
                 i.GaborImg = Gabor.Create(i.Norm, i.OrientImg, i.FrequencyImg, i.SegmentMask, BLOCK_SIZE);
-                i.Skeleton = Binary.Create(i.GaborImg, 100);
                 return true;
             });
             PrintElapse("Gabor filter");
 
             Counter.Restart();
             Each((i) => {
-                new Skeletonization(i.Skeleton).BruteApply();
-                Skeletonization.RemoveShortRidges(i.Skeleton, 20);
+                ZhangSuen.ZhangSuenThinning(i.GaborImg);
+                i.Skeleton = Binary.Create(i.GaborImg, 100);
                 int margin = (int)Math.Round(3.0 / Gabor.GetMedianFreq(i.FrequencyImg) * 0.65);
                 i.SingularMgr.ExtractKeysFromSkeleton(i.Skeleton, i.SegmentMask, margin);
                 return true;

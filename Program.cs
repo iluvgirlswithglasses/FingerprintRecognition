@@ -6,7 +6,6 @@ using FingerprintRecognition.DataStructure;
 using FingerprintRecognition.Filter;
 using FingerprintRecognition.MatrixConverter;
 using FingerprintRecognition.Tool;
-using SmartVector.Model;
 using static System.Math;
 
 /** @ program parameters */
@@ -42,8 +41,8 @@ void RangeCompare() {
 }
 
 void TargetCompare() {
-    int cnt = 2;
-    string[] files = new string[]{"100.bmp", "101.bmp"};
+    int cnt = 1;
+    string[] files = new string[]{"0.bmp"};
     FImage[] imgs = new FImage[cnt];
     for (int i = 0; i < cnt; i++) {
         Console.WriteLine("Processing file " + files[i]);
@@ -68,16 +67,4 @@ void TargetCompare() {
 }
 
 /** @ main */
-Image<Gray, byte> src = new(OUT + "gabor-101.png");
-byte[,] mat = new byte[src.Height, src.Width];
-MatTool<byte>.Forward(ref mat, (y, x, v) => {
-    if (src[y, x].Intensity > 250) mat[y, x] = 255;
-    return true;
-});
-ZhangSuen.ZhangSuenThinning(mat);
-MatTool<byte>.Forward(ref mat, (y, x, v) => {
-    src[y, x] = new Gray(mat[y, x]);
-    return true;
-});
-CvInvoke.Imwrite(OUT + "zhang.png", src);
 

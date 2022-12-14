@@ -34,11 +34,9 @@ namespace FingerprintRecognition.Filter {
          * `orient`:    the orient matrix, size [ h / blocksize, w / blocksize ]
          * `freq`:      the frequency matrix, size [ h, w ]
          * */
-        static public double[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq, bool[,] msk, int imgBlockSize) {
+        static public byte[,] Create(Image<Gray, double> norm, double[,] orient, double[,] freq, bool[,] msk, int imgBlockSize) {
 
             int h = norm.Height, w = norm.Width;
-
-            double[,] res = new double[h, w];
             double medianFreq = GetMedianFreq(freq);
 
             // Generate filters corresponding to these distinct frequencies and
@@ -77,49 +75,13 @@ namespace FingerprintRecognition.Filter {
                 return true;
             });
 
-            // SlowFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
+            // convolution & returns
+            byte[,] res = new byte[h, w];
             QuickFilt(res, norm, orient, freq, refFilter, msk, blockSize, filterSize, imgBlockSize);
-
-            // binary effect
-            MatTool<double>.Forward(ref res, (y, x, val) => {
-                if (val < 0)
-                    res[y, x] = 255;
-                else
-                    res[y, x] = 0;
-                return true;
-            });
-
             return res;
         }
 
-        static private void SlowFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
-
-            // double[,] pseudoFilter = AffineRotation<double>.KeepSizeCreate(refFilter, 0);
-
-            Iterator2D.Forward(blockSize, blockSize, norm.Height - blockSize, norm.Width - blockSize, (y, x) => {
-                if (!msk[y, x])
-                    return false;
-
-                // trials and errors
-                double angle = PI / 2 - orient[y / bs, x / bs];
-                // this can be cached later
-                double[,] filter = AffineRotation<double>.KeepSizeCreate(refFilter, angle);
-
-                for (int r = 0; r < filterSize; r++) {
-                    for (int c = 0; c < filterSize; c++) {
-                        int localY = y - blockSize + r;
-                        int localX = x - blockSize + c;
-
-                        // res[y, x] += norm[localY, localX].Intensity * pseudoFilter[r, c];
-                        res[y, x] += norm[localY, localX].Intensity * filter[r, c];
-                    }
-                }
-
-                return true;
-            });
-        }
-
-        static private void QuickFilt(double[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
+        static private void QuickFilt(byte[,] res, Image<Gray, double> norm, double[,] orient, double[,] freq, double[,] refFilter, bool[,] msk, int blockSize, int filterSize, int bs) {
 
             double angleInc = PI * 3 / 180;
             List<double> acceptedAngles = new();
@@ -143,15 +105,19 @@ namespace FingerprintRecognition.Filter {
                 // trials and errors
                 double angle = PI / 2 - orient[y / bs, x / bs];
                 int angleInd = LowerBound(compressed, angle);
+                double val = 0;
 
                 for (int r = 0; r < filterSize; r++) {
                     for (int c = 0; c < filterSize; c++) {
                         int localY = y - blockSize + r;
                         int localX = x - blockSize + c;
 
-                        res[y, x] += norm[localY, localX].Intensity * filters[angleInd][r, c];
+                        val += norm[localY, localX].Intensity * filters[angleInd][r, c];
                     }
                 }
+
+                if (val < 0) res[y, x] = 255;
+                // else res[y, x] = 0;
 
                 return true;
             });
