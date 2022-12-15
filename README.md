@@ -1,1 +1,1 @@
-references: [http://ethesis.nitrkl.ac.in/2063/1/fingerprint_thesis..pdf](http://ethesis.nitrkl.ac.in/2063/1/fingerprint_thesis..pdf)
+This is an experimental project. After all the experiments are finished, FingerprintRecognitionV2 will be open with neat & optimized code.
