@@ -21,22 +21,18 @@ namespace FingerprintRecognition.MathMatrix {
 
             Iterator2D.Forward(orient.GetLength(0), orient.GetLength(1), (y, x) => {
                 double angle = orient[y, x];
-                if (angle != 0) {
-                    double val = Query(
-                        norm, y * bs, x * bs, Min(y * bs + bs, norm.Height), Min(x * bs + bs, norm.Width), angle, ks, minWaveLength, maxWavelength
-                    );
-                    if (val != 0.0) {
-                        MatTool<double>.Forward(ref freq, y * bs, x * bs, y * bs + bs, x * bs + bs, (r, c, _v) => {
-                            freq[r, c] = val;
-                            return true;
-                        });
-                    }
-                }
+                double val = Query(
+                    norm, y * bs, x * bs, Min(y * bs + bs, norm.Height), Min(x * bs + bs, norm.Width), angle, ks, minWaveLength, maxWavelength
+                );
+                MatTool<double>.Forward(ref freq, y * bs, x * bs, y * bs + bs, x * bs + bs, (r, c, _v) => {
+                    freq[r, c] = val;
+                    return true;
+                });
                 return true;
             });
 
             MatTool<double>.Forward(ref freq, (y, x, v) => {
-                freq[y, x] = v * Convert.ToInt32(msk[y, x]);
+                if (!msk[y, x]) freq[y, x] = 0;
                 return true;
             });
 
@@ -75,7 +71,7 @@ namespace FingerprintRecognition.MathMatrix {
             double avg = 0.0;
             for (int x = 0; x < width; x++)
                 avg += ridgeSum[x];
-            avg /= ridgeSum.Length;
+            avg /= width;
 
             // get dilation and filter out noise
             double[] dilation = Morphology<int>.SimpleGrayDilation(ridgeSum, ks, 1);

@@ -17,31 +17,40 @@ namespace FingerprintRecognition.MatrixConverter {
         static public Image<Gray, byte> FromDoubleMatrix(double[,] src) {
             var res = new Image<Gray, byte>(src.GetLength(1), src.GetLength(0));
 
-            double mx = 0.0;
+            double mn = 0.0, mx = 0.0, span;
             MatTool<double>.Forward(ref src, (y, x, val) => {
                 mx = Math.Max(mx, val);
+                mn = Math.Min(mn, val);
                 return true;
             });
 
-            if (mx == 0.0)
+            span = mx - mn;
+            if (span == 0)
                 return res;
 
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
-                    res[y, x] = new Gray(src[y, x] / mx * 255.0);
+                    res[y, x] = new Gray((src[y, x] - mn) / span * 255.0);
             return res;
         }
 
         static public Image<Gray, byte> FromDoubleImage(Image<Gray, double> src) {
             var res = new Image<Gray, byte>(src.Size);
-            double mx = Tool.ImgTool<double>.Max(ref src);
 
-            if (mx == 0.0)
+            double mn = 0.0, mx = 0.0, span;
+            ImgTool<double>.Forward(ref src, (y, x, val) => {
+                mx = Math.Max(mx, val);
+                mn = Math.Min(mn, val);
+                return true;
+            });
+
+            span = mx - mn;
+            if (span == 0)
                 return res;
 
             for (int y = 0; y < res.Height; y++)
                 for (int x = 0; x < res.Width; x++)
-                    res[y, x] = new Gray(src[y, x].Intensity / mx * 255.0);
+                    res[y, x] = new Gray((src[y, x].Intensity - mn) / span * 255.0);
             return res;
         }
     }

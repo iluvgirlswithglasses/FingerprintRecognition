@@ -22,11 +22,24 @@ namespace FingerprintRecognition.Filter {
             });
 
             if (freqList.Count == 0)
-                return 1.414;   // just in case
+                return 0.1414;   // just in case
 
             // get the median frequency
             freqList.Sort();
-            return freqList.ToList()[freqList.Count >> 1];
+
+            /*
+            SortedDictionary<double, int> dct = new();
+            foreach (var i in freqList) {
+                if (!dct.ContainsKey(i))
+                    dct.Add(i, 0);
+                dct[i]++;
+            }
+            foreach (var i in dct) {
+                Console.WriteLine(i.Key.ToString() + ": " + i.Value.ToString());
+            }
+            */
+
+            return freqList[freqList.Count >> 1];
         }
 
         /** 

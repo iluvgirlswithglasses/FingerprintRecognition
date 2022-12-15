@@ -1,5 +1,6 @@
 .vs
 bin
+log
 obj
 sample-images
 sample-images-o

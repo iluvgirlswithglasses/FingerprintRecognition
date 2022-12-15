@@ -41,8 +41,8 @@ void RangeCompare() {
 }
 
 void TargetCompare() {
-    int cnt = 1;
-    string[] files = new string[]{"0.bmp"};
+    int cnt = 2;
+    string[] files = new string[]{"23.bmp", "24.bmp"};
     FImage[] imgs = new FImage[cnt];
     for (int i = 0; i < cnt; i++) {
         Console.WriteLine("Processing file " + files[i]);
@@ -67,4 +67,5 @@ void TargetCompare() {
 }
 
 /** @ main */
-
+RangeCompare();
+// Log2Img.Exc();
